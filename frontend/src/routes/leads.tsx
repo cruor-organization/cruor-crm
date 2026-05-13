@@ -1,23 +1,36 @@
-import { useQuery } from '@tanstack/react-query';
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 
 import { api } from '@/lib/api';
 import { authClient } from '@/lib/auth-client';
+import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
+import { LeadForm } from '@/components/forms/LeadForm';
 
 interface Lead {
   id: string;
   tradingName: string;
-  status: string;
+  legalName: string | null;
+  phone: string | null;
+  whatsappNumber: string | null;
+  email: string | null;
   source: string;
-  score: number;
   businessType: string | null;
   estimatedMonthlyVolumeEur: string | null;
   geoZone: string | null;
+  notes: string | null;
+  score: number;
+  status: string;
 }
 
 interface LeadList {
   items: Lead[];
   total: number;
+}
+
+interface ConvertResult {
+  customerId?: string;
 }
 
 const KANBAN_COLUMNS = ['NEW', 'CONTACTED', 'QUALIFIED', 'NEGOTIATING', 'WON', 'LOST'] as const;
@@ -31,6 +44,24 @@ const COLUMN_COLORS: Record<string, string> = {
   LOST: 'bg-neutral-100 border-neutral-300',
 };
 
+const COLUMN_LABELS: Record<string, string> = {
+  NEW: 'Novo',
+  CONTACTED: 'Contactado',
+  QUALIFIED: 'Qualificado',
+  NEGOTIATING: 'Em negociação',
+  WON: 'Ganho',
+  LOST: 'Perdido',
+};
+
+const NEXT_STATUS: Record<string, string | null> = {
+  NEW: 'CONTACTED',
+  CONTACTED: 'QUALIFIED',
+  QUALIFIED: 'NEGOTIATING',
+  NEGOTIATING: 'WON',
+  WON: null,
+  LOST: null,
+};
+
 export const Route = createFileRoute('/leads')({
   component: LeadsPage,
   beforeLoad: async () => {
@@ -40,6 +71,12 @@ export const Route = createFileRoute('/leads')({
 });
 
 function LeadsPage() {
+  const [showCreate, setShowCreate] = useState(false);
+  const [editTarget, setEditTarget] = useState<Lead | null>(null);
+  const [menuOpen, setMenuOpen] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['leads'],
     queryFn: () => api.get<LeadList>('/api/leads?take=200'),
@@ -47,13 +84,33 @@ function LeadsPage() {
 
   const byStatus = (status: string) => data?.items.filter((l) => l.status === status) ?? [];
 
+  const handleAdvanceStatus = async (lead: Lead) => {
+    const next = NEXT_STATUS[lead.status];
+    if (!next) return;
+    await api.patch(`/api/leads/${lead.id}/status`, { status: next });
+    await queryClient.invalidateQueries({ queryKey: ['leads'] });
+    setMenuOpen(null);
+  };
+
+  const handleConvert = async (lead: Lead) => {
+    const result = await api.post<ConvertResult>(`/api/leads/${lead.id}/convert`, {});
+    await queryClient.invalidateQueries({ queryKey: ['leads'] });
+    setMenuOpen(null);
+    if (result?.customerId) {
+      void navigate({ to: '/customers/$id', params: { id: result.customerId } });
+    }
+  };
+
   return (
     <section>
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold">Floristas Potenciais</h1>
-        <p className="text-sm text-neutral-500">
-          Pipeline em Kanban — {data ? `${data.total} leads` : 'a carregar…'}
-        </p>
+      <header className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Floristas Potenciais</h1>
+          <p className="text-sm text-neutral-500">
+            Pipeline em Kanban — {data ? `${data.total} leads` : 'a carregar…'}
+          </p>
+        </div>
+        <Button onClick={() => setShowCreate(true)}>Novo potencial</Button>
       </header>
 
       {isLoading && <div className="text-neutral-500">A carregar…</div>}
@@ -70,7 +127,7 @@ function LeadsPage() {
               >
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-700">
-                    {col}
+                    {COLUMN_LABELS[col]}
                   </h2>
                   <span className="rounded-full bg-white px-2 py-0.5 text-xs">{leads.length}</span>
                 </div>
@@ -99,6 +156,49 @@ function LeadsPage() {
                           {l.score}/100
                         </span>
                       </div>
+
+                      {/* Menu de ações */}
+                      <div className="relative mt-2 border-t pt-2">
+                        <button
+                          type="button"
+                          className="text-xs text-neutral-500 hover:text-neutral-700"
+                          onClick={() => setMenuOpen(menuOpen === l.id ? null : l.id)}
+                        >
+                          ···
+                        </button>
+                        {menuOpen === l.id && (
+                          <div className="absolute right-0 z-10 mt-1 w-48 rounded-md border bg-white py-1 shadow-md">
+                            <button
+                              type="button"
+                              className="w-full px-4 py-2 text-left text-xs hover:bg-neutral-50"
+                              onClick={() => {
+                                setEditTarget(l);
+                                setMenuOpen(null);
+                              }}
+                            >
+                              Editar
+                            </button>
+                            {NEXT_STATUS[l.status] && (
+                              <button
+                                type="button"
+                                className="w-full px-4 py-2 text-left text-xs hover:bg-neutral-50"
+                                onClick={() => void handleAdvanceStatus(l)}
+                              >
+                                Avançar → {COLUMN_LABELS[NEXT_STATUS[l.status]!]}
+                              </button>
+                            )}
+                            {l.status !== 'WON' && l.status !== 'LOST' && (
+                              <button
+                                type="button"
+                                className="w-full px-4 py-2 text-left text-xs text-emerald-600 hover:bg-neutral-50"
+                                onClick={() => void handleConvert(l)}
+                              >
+                                Converter em florista
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </article>
                   ))}
                 </div>
@@ -107,6 +207,22 @@ function LeadsPage() {
           })}
         </div>
       )}
+
+      {/* Modal criar */}
+      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Novo potencial">
+        <LeadForm mode="create" onSuccess={() => setShowCreate(false)} />
+      </Modal>
+
+      {/* Modal editar */}
+      <Modal
+        open={!!editTarget}
+        onClose={() => setEditTarget(null)}
+        title={`Editar: ${editTarget?.tradingName ?? ''}`}
+      >
+        {editTarget && (
+          <LeadForm mode="edit" lead={editTarget} onSuccess={() => setEditTarget(null)} />
+        )}
+      </Modal>
     </section>
   );
 }

@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { createFileRoute, redirect, Link } from '@tanstack/react-router';
 
 import { api } from '@/lib/api';
 import { authClient } from '@/lib/auth-client';
+import { Button } from '@/components/ui/Button';
 
 interface Product {
   id: string;
@@ -55,9 +56,14 @@ function ProductsPage() {
 
   return (
     <section>
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold">Produtos</h1>
-        <p className="text-sm text-neutral-500">{data ? `${data.total} SKUs` : 'A carregar…'}</p>
+      <header className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Produtos</h1>
+          <p className="text-sm text-neutral-500">{data ? `${data.total} SKUs` : 'A carregar…'}</p>
+        </div>
+        <Link to="/products/new">
+          <Button>Novo produto</Button>
+        </Link>
       </header>
 
       {isLoading && <div className="text-neutral-500">A carregar…</div>}
@@ -65,7 +71,7 @@ function ProductsPage() {
 
       {data?.items.length === 0 && (
         <div className="rounded-md border border-dashed bg-white p-12 text-center text-neutral-500">
-          Sem produtos. Adiciona via API por agora.
+          Sem produtos. Adiciona o primeiro.
         </div>
       )}
 
@@ -88,10 +94,16 @@ function ProductsPage() {
             </thead>
             <tbody className="divide-y">
               {data.items.map((p) => (
-                <tr key={p.id} className="hover:bg-neutral-50">
+                <tr key={p.id} className="cursor-pointer hover:bg-neutral-50">
                   <td className="px-3 py-2 font-mono text-xs">{p.sku}</td>
                   <td className="px-3 py-2 font-medium">
-                    {p.name}
+                    <Link
+                      to="/products/$id"
+                      params={{ id: p.id }}
+                      className="hover:text-emerald-700 hover:underline"
+                    >
+                      {p.name}
+                    </Link>
                     {p.isAnchor && (
                       <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
                         âncora

@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { createFileRoute, redirect, Link } from '@tanstack/react-router';
 
 import { api } from '@/lib/api';
 import { authClient } from '@/lib/auth-client';
+import { Button } from '@/components/ui/Button';
 
 interface Customer {
   id: string;
@@ -51,6 +52,9 @@ function CustomersPage() {
             {data ? `${data.total} registos` : 'A carregar…'}
           </p>
         </div>
+        <Link to="/customers/new">
+          <Button>Novo florista</Button>
+        </Link>
       </header>
 
       {isLoading && <div className="text-neutral-500">A carregar…</div>}
@@ -77,8 +81,16 @@ function CustomersPage() {
             </thead>
             <tbody className="divide-y">
               {data.items.map((c) => (
-                <tr key={c.id} className="hover:bg-neutral-50">
-                  <td className="px-4 py-2 font-medium">{c.legalName}</td>
+                <tr key={c.id} className="cursor-pointer hover:bg-neutral-50">
+                  <td className="px-4 py-2 font-medium">
+                    <Link
+                      to="/customers/$id"
+                      params={{ id: c.id }}
+                      className="hover:text-emerald-700 hover:underline"
+                    >
+                      {c.legalName}
+                    </Link>
+                  </td>
                   <td className="px-4 py-2 text-neutral-600">{c.tradingName ?? '—'}</td>
                   <td className="px-4 py-2 font-mono text-xs">{c.taxId ?? '—'}</td>
                   <td className="px-4 py-2">{c.businessType}</td>
