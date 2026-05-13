@@ -2,6 +2,11 @@
 //
 // Fase 0: tabelas Better Auth (user, session, account, verification,
 //          organization, member, invitation).
+// Fase 1: Suppliers, Customers + Leads + Activities, Products + variants/media/votes,
+//          Bundles, AuditLog.
+// Fase 2: StockLocation, StockLevel, StockMovement, PriceList + lines,
+//          CustomerSpecialPrice. Hard invariants §7.5/§10.4: qty>=0 (CHECK),
+//          reservas atómicas via SELECT … FOR UPDATE, price floor landed × 1.10.
 //
 // pgvector está habilitado via `previewFeatures` + `extensions`.
 
@@ -35,10 +40,15 @@ model User {
   banReason  String?
   banExpires DateTime?
 
-  sessions    Session[]
-  accounts    Account[]
-  memberships Member[]
-  invitations Invitation[] @relation("InvitationInviter")
+  sessions          Session[]
+  accounts          Account[]
+  memberships       Member[]
+  invitations       Invitation[]       @relation("InvitationInviter")
+  assignedCustomers Customer[]         @relation("CustomerSalesRep")
+  assignedLeads     CustomerLead[]     @relation("LeadSalesRep")
+  activities        CustomerActivity[]
+  productVotes      ProductVote[]
+  auditLogs         AuditLog[]
 
   @@map("user")
 }
@@ -109,6 +119,13 @@ model Organization {
 
   members     Member[]
   invitations Invitation[]
+  suppliers   Supplier[]
+  customers   Customer[]
+  leads       CustomerLead[]
+  activities  CustomerActivity[]
+  products    Product[]
+  bundles     Bundle[]
+  auditLogs   AuditLog[]
 
   @@map("organization")
 }
@@ -147,4 +164,526 @@ model Invitation {
   @@index([organizationId])
   @@index([email])
   @@map("invitation")
+}
+
+// ----------------------------------------------------------------------------
+// Domínio Fase 1 — Suppliers (§10.2, §7.1)
+// ----------------------------------------------------------------------------
+
+enum SupplierType {
+  ALIBABA_SELLER
+  EU_IMPORTER
+  DIRECT_MANUFACTURER
+  DOMESTIC
+}
+
+enum Incoterm {
+  FOB
+  CIF
+  EXW
+  DAP
+  DDP
+}
+
+model Supplier {
+  id                  String       @id @default(cuid())
+  organizationId      String
+  name                String
+  legalName           String?
+  country             String       @db.Char(2) // ISO 3166-1 alpha-2
+  type                SupplierType
+  taxId               String?
+  // Contactos: [{ kind: "email"|"phone"|"wechat"|"whatsapp"|"alibaba_chat", value, primary }]
+  contacts            Json         @default("[]")
+  paymentTerms        String?
+  incoterms           Incoterm?
+  defaultLeadTimeDays Int?
+  tags                String[]     @default([])
+  notes               String?
+
+  // Score derivado (atualizado em job; cacheado para querys).
+  scoreCache       Int? // 0-100
+  onTimeRate       Decimal? @db.Decimal(5, 4)
+  defectRate       Decimal? @db.Decimal(5, 4)
+  avgResponseHours Decimal? @db.Decimal(8, 2)
+
+  status    String    @default("ACTIVE") // ACTIVE | INACTIVE | BLOCKED
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  products     Product[]
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, name])
+  @@map("supplier")
+}
+
+// ----------------------------------------------------------------------------
+// Domínio Fase 1 — Customers (§10.3, §7.3)
+// ----------------------------------------------------------------------------
+
+enum CustomerBusinessType {
+  PHYSICAL_SHOP
+  EVENT_ATELIER
+  DECORATOR
+  HOTEL_RESTAURANT
+  ONLINE_ONLY
+  MIXED
+}
+
+enum PricingTier {
+  STANDARD
+  PROFESSIONAL
+  KEY_ACCOUNT
+  DISTRIBUTOR
+}
+
+enum CustomerStatus {
+  PROSPECT
+  ACTIVE
+  AT_RISK
+  CHURNED
+  BLOCKED
+}
+
+enum PreferredChannel {
+  WHATSAPP
+  EMAIL
+  PHONE
+  IN_PERSON
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model Customer {
+  id              String               @id @default(cuid())
+  organizationId  String
+  businessType    CustomerBusinessType
+  legalName       String
+  tradingName     String?
+  taxId           String? // NIF/CIF
+  taxCountry      String?              @db.Char(2)
+  addresses       Json                 @default("[]") // billing + multi-shipping
+  contacts        Json                 @default("[]")
+  phonePrimary    String?
+  whatsappNumber  String?
+  email           String?
+  website         String?
+  instagramHandle String?
+  pricingTier     PricingTier          @default(STANDARD)
+  salesRepId      String? // FK para User (membership do CRM)
+
+  // Comercial
+  creditLimitEur            Decimal           @default(0) @db.Decimal(12, 2)
+  paymentTermDays           Int               @default(0)
+  preferredChannel          PreferredChannel?
+  preferredDeliveryDay      DayOfWeek?
+  shopSizeSqm               Int?
+  estimatedMonthlyVolumeEur Decimal?          @db.Decimal(12, 2)
+
+  // Sazonalidade
+  peakSeasons String[] @default([])
+
+  // Status
+  status           CustomerStatus @default(ACTIVE)
+  churnRiskScore   Decimal?       @db.Decimal(5, 2)
+  firstOrderAt     DateTime?
+  lastOrderAt      DateTime?
+  lifetimeValueEur Decimal        @default(0) @db.Decimal(14, 2)
+
+  // Geografia
+  geoLat       Decimal? @db.Decimal(9, 6)
+  geoLng       Decimal? @db.Decimal(9, 6)
+  deliveryZone String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization       Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  salesRep           User?              @relation("CustomerSalesRep", fields: [salesRepId], references: [id], onDelete: SetNull)
+  activities         CustomerActivity[]
+  leadsConvertedFrom CustomerLead[]     @relation("ConvertedToCustomer")
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, salesRepId])
+  @@index([organizationId, pricingTier])
+  @@map("customer")
+}
+
+// ----------------------------------------------------------------------------
+// Domínio Fase 1 — CustomerLead (Kanban) (§10.3)
+// ----------------------------------------------------------------------------
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  NEGOTIATING
+  WON
+  LOST
+}
+
+enum LeadSource {
+  REFERRAL
+  WEBSITE
+  INSTAGRAM
+  COLD_OUTREACH
+  EVENT_FAIR
+  GOOGLE_PLACES
+  OTHER
+}
+
+model CustomerLead {
+  id                        String                @id @default(cuid())
+  organizationId            String
+  tradingName               String
+  legalName                 String?
+  email                     String?
+  phone                     String?
+  whatsappNumber            String?
+  source                    LeadSource            @default(OTHER)
+  businessType              CustomerBusinessType?
+  instagramHandle           String?
+  instagramFollowers        Int?
+  shopSizeSqm               Int?
+  estimatedMonthlyVolumeEur Decimal?              @db.Decimal(12, 2)
+  geoZone                   String?
+  notes                     String?
+
+  status     LeadStatus @default(NEW)
+  // Score derivado (recomputed em hooks); 0-100.
+  score      Int        @default(0)
+  salesRepId String?
+
+  convertedAt           DateTime?
+  convertedToCustomerId String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  salesRep            User?        @relation("LeadSalesRep", fields: [salesRepId], references: [id], onDelete: SetNull)
+  convertedToCustomer Customer?    @relation("ConvertedToCustomer", fields: [convertedToCustomerId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, salesRepId])
+  @@map("customer_lead")
+}
+
+// ----------------------------------------------------------------------------
+// Domínio Fase 1 — CustomerActivity (cronologia unificada) (§10.3)
+// ----------------------------------------------------------------------------
+
+enum ActivityKind {
+  CALL
+  VISIT
+  MEETING
+  WHATSAPP_IN
+  WHATSAPP_OUT
+  EMAIL_IN
+  EMAIL_OUT
+  ORDER_PLACED
+  ORDER_DELIVERED
+  RETURN_OPENED
+  NOTE
+  CONVERTED_FROM_LEAD
+  STATUS_CHANGED
+}
+
+model CustomerActivity {
+  id             String       @id @default(cuid())
+  organizationId String
+  customerId     String
+  actorId        String? // User que originou (null = sistema)
+  kind           ActivityKind
+  // Payload livre por kind (ex.: { leadId } em CONVERTED_FROM_LEAD).
+  payload        Json         @default("{}")
+  occurredAt     DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customer     Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  actor        User?        @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, customerId, occurredAt(sort: Desc)])
+  @@index([organizationId, kind])
+  @@map("customer_activity")
+}
+
+// ----------------------------------------------------------------------------
+// Domínio Fase 1 — Products (§10.4, §7.2)
+// ----------------------------------------------------------------------------
+
+enum ProductCategory {
+  DRY_FLOWERS
+  PRESERVED_FLOWERS
+  VASES_CONTAINERS
+  FLORAL_FOAM
+  RIBBONS_PACKAGING
+  TOOLS_ACCESSORIES
+  ARTIFICIAL_PLANTS
+  DECORATIVE_OBJECTS
+}
+
+enum MaterialPrimary {
+  GLASS
+  CERAMIC
+  METAL
+  WOOD
+  NATURAL_FIBER
+  FOAM
+  RESIN
+  PLASTIC
+  TEXTILE
+  PAPER
+  OTHER
+}
+
+enum ProductFinish {
+  MATTE
+  GLOSSY
+  RUSTIC
+  METALLIC
+  TEXTURED
+  TRANSPARENT
+}
+
+enum VisualStyle {
+  RUSTIC
+  ROMANTIC
+  MODERN
+  MINIMALIST
+  BOHO
+  CLASSIC
+  FUNERAL
+}
+
+enum HumiditySensitivity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ProductDecision {
+  PENDING
+  APPROVED
+  REJECTED
+  DISCONTINUED
+}
+
+enum ProductStatus {
+  ACTIVE
+  OUT_OF_STOCK
+  DISCONTINUED
+  COMING_SOON
+}
+
+model Product {
+  id               String          @id @default(cuid())
+  organizationId   String
+  sku              String
+  name             String
+  slug             String
+  category         ProductCategory
+  subcategory      String?
+  description      String? // rich text
+  shortDescription String?
+
+  brand         String?
+  supplierId    String?
+  supplierSku   String?
+  originCountry String? @db.Char(2)
+
+  // Físicos
+  heightCm        Decimal?         @db.Decimal(8, 2)
+  widthCm         Decimal?         @db.Decimal(8, 2)
+  depthCm         Decimal?         @db.Decimal(8, 2)
+  weightG         Decimal?         @db.Decimal(10, 2)
+  materialPrimary MaterialPrimary?
+  finish          ProductFinish?
+
+  // Visuais (AI vision)
+  dominantColor   String?
+  secondaryColors String[]     @default([])
+  visualStyle     VisualStyle?
+
+  // Flores secas/preservadas
+  isPreserved           Boolean              @default(false)
+  isDried               Boolean              @default(false)
+  botanicalName         String?
+  shelfLifeMonths       Int?
+  sensitivityToHumidity HumiditySensitivity?
+  batchOriginDate       DateTime?
+
+  // Sazonalidade
+  seasonality String[] @default([])
+  peakMonths  Int[]    @default([])
+
+  // Comercial
+  costEur              Decimal  @db.Decimal(12, 2)
+  recommendedRetailEur Decimal? @db.Decimal(12, 2)
+  moq                  Int      @default(1)
+  caseSize             Int      @default(1)
+  leadTimeDays         Int?
+
+  // Decisão multi-sócio
+  score       Decimal?        @db.Decimal(4, 2) // 0-10
+  visualScore Decimal?        @db.Decimal(4, 2)
+  comment     String?
+  decision    ProductDecision @default(PENDING)
+  isAnchor    Boolean         @default(false) // §Anexo B "peça âncora"
+
+  // Estado
+  status      ProductStatus @default(ACTIVE)
+  firstSeenAt DateTime      @default(now())
+  lastSoldAt  DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  supplier     Supplier?        @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  variants     ProductVariant[]
+  media        ProductMedia[]
+  votes        ProductVote[]
+
+  @@unique([organizationId, sku])
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([organizationId, category])
+  @@index([organizationId, decision])
+  @@index([organizationId, status])
+  @@index([organizationId, supplierId])
+  @@map("product")
+}
+
+model ProductVariant {
+  id             String   @id @default(cuid())
+  organizationId String
+  productId      String
+  sku            String
+  label          String // ex.: "Grande / Bege"
+  attributes     Json     @default("{}") // { color, size, finish, ... }
+  costEur        Decimal? @db.Decimal(12, 2)
+  weightG        Decimal? @db.Decimal(10, 2)
+  isDefault      Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, sku])
+  @@index([productId])
+  @@map("product_variant")
+}
+
+enum MediaKind {
+  PHOTO
+  VIDEO
+  TECH_SHEET
+}
+
+model ProductMedia {
+  id             String    @id @default(cuid())
+  organizationId String
+  productId      String
+  kind           MediaKind @default(PHOTO)
+  url            String
+  altText        String?
+  position       Int       @default(0)
+  // AI vision output
+  visionTags     String[]  @default([])
+  qualityIssues  String[]  @default([])
+
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_media")
+}
+
+model ProductVote {
+  id             String   @id @default(cuid())
+  organizationId String
+  productId      String
+  userId         String
+  score          Decimal  @db.Decimal(4, 2) // 0-10
+  visualScore    Decimal? @db.Decimal(4, 2)
+  comment        String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userId])
+  @@index([organizationId, productId])
+  @@map("product_vote")
+}
+
+// ----------------------------------------------------------------------------
+// Domínio Fase 1 — Bundle (kit promocional)
+// ----------------------------------------------------------------------------
+
+model Bundle {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  slug           String
+  description    String?
+  // Conteúdo: [{ productId, variantId?, qty }]
+  items          Json     @default("[]")
+  priceEur       Decimal? @db.Decimal(12, 2)
+  seasonalityTag String?
+  active         Boolean  @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@map("bundle")
+}
+
+// ----------------------------------------------------------------------------
+// AuditLog (§9 hard invariant — mutations sensíveis registadas)
+// ----------------------------------------------------------------------------
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  actorId        String? // null = sistema
+  entityType     String // "customer" | "supplier" | "product" | ...
+  entityId       String
+  action         String // "CREATE" | "UPDATE" | "DELETE" | "RESTORE"
+  changes        Json? // diff seletivo
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  actor        User?        @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([organizationId, entityType, entityId])
+  @@map("audit_log")
 }
