@@ -1,7 +1,7 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 
-import { authClient } from '@/lib/auth-client';
 import { ProductForm } from '@/components/forms/ProductForm';
+import { authClient } from '@/lib/auth-client';
 
 export const Route = createFileRoute('/products/new')({
   component: ProductNewPage,

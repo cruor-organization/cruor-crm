@@ -1,12 +1,12 @@
-import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
+import { useState } from 'react';
 
-import { api } from '@/lib/api';
-import { authClient } from '@/lib/auth-client';
+import { LeadForm } from '@/components/forms/LeadForm';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { LeadForm } from '@/components/forms/LeadForm';
+import { api } from '@/lib/api';
+import { authClient } from '@/lib/auth-client';
 
 interface Lead {
   id: string;

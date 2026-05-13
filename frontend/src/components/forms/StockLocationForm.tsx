@@ -1,6 +1,9 @@
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 
+import { Button } from '@/components/ui/Button';
+import { Checkbox } from '@/components/ui/Checkbox';
+import { Field, inputCls } from '@/components/ui/Field';
 import { api } from '@/lib/api';
 import { useFormSubmit } from '@/lib/forms/useFormSubmit';
 import {
@@ -8,9 +11,6 @@ import {
   updateStockLocationSchema,
   type CreateStockLocationInput,
 } from '@/lib/schemas/stock';
-import { Button } from '@/components/ui/Button';
-import { Field, inputCls } from '@/components/ui/Field';
-import { Checkbox } from '@/components/ui/Checkbox';
 
 interface LocationData {
   id: string;

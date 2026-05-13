@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
-import { api } from '@/lib/api';
-import { authClient } from '@/lib/auth-client';
 import { CustomerForm } from '@/components/forms/CustomerForm';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { api } from '@/lib/api';
+import { authClient } from '@/lib/auth-client';
 
 interface CustomerDetail {
   id: string;

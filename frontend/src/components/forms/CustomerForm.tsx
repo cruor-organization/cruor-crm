@@ -1,7 +1,12 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 
+import { Button } from '@/components/ui/Button';
+import { Checkbox } from '@/components/ui/Checkbox';
+import { Field, inputCls } from '@/components/ui/Field';
+import { Select } from '@/components/ui/Select';
+import { Tabs } from '@/components/ui/Tabs';
 import { api } from '@/lib/api';
 import { useFormSubmit } from '@/lib/forms/useFormSubmit';
 import {
@@ -15,11 +20,6 @@ import {
   peakSeasonMonths,
   type CreateCustomerInput,
 } from '@/lib/schemas/customer';
-import { Button } from '@/components/ui/Button';
-import { Tabs } from '@/components/ui/Tabs';
-import { Field, inputCls } from '@/components/ui/Field';
-import { Select } from '@/components/ui/Select';
-import { Checkbox } from '@/components/ui/Checkbox';
 
 const TABS = [
   { id: 'identidade', label: 'Identidade' },

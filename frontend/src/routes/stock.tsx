@@ -1,20 +1,20 @@
-import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, redirect } from '@tanstack/react-router';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 
+import { StockLocationForm } from '@/components/forms/StockLocationForm';
+import { StockMovementForm } from '@/components/forms/StockMovementForm';
+import { Button } from '@/components/ui/Button';
+import { Field, inputCls } from '@/components/ui/Field';
+import { Modal } from '@/components/ui/Modal';
+import { Select } from '@/components/ui/Select';
+import { Tabs } from '@/components/ui/Tabs';
 import { api } from '@/lib/api';
 import { authClient } from '@/lib/auth-client';
 import { useFormSubmit } from '@/lib/forms/useFormSubmit';
 import { createStockTransferSchema, type CreateStockTransferInput } from '@/lib/schemas/stock';
-import { Tabs } from '@/components/ui/Tabs';
-import { Button } from '@/components/ui/Button';
-import { Modal } from '@/components/ui/Modal';
-import { Field, inputCls } from '@/components/ui/Field';
-import { Select } from '@/components/ui/Select';
-import { StockLocationForm } from '@/components/forms/StockLocationForm';
-import { StockMovementForm } from '@/components/forms/StockMovementForm';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 
 const PAGE_TABS = [
   { id: 'locations', label: 'Localizações' },

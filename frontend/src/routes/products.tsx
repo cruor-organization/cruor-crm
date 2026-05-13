@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, redirect, Link } from '@tanstack/react-router';
 
+import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 import { authClient } from '@/lib/auth-client';
-import { Button } from '@/components/ui/Button';
 
 interface Product {
   id: string;
