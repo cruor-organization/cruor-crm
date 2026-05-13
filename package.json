@@ -1,0 +1,39 @@
+{
+  "name": "crm-florista-b2b-root",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Root scripts e ferramentas dev partilhadas. Cada serviço (backend, frontend, ai-service) tem o seu próprio package.json e node_modules.",
+  "engines": {
+    "node": ">=20.0.0 <23",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "install:all": "pnpm -C backend install && pnpm -C frontend install && pnpm -C ai-service install",
+    "dev": "concurrently -k -n backend,frontend,ai \"pnpm -C backend dev\" \"pnpm -C frontend dev\" \"pnpm -C ai-service dev\"",
+    "dev:backend": "pnpm -C backend dev",
+    "dev:frontend": "pnpm -C frontend dev",
+    "dev:ai": "pnpm -C ai-service dev",
+    "lint": "pnpm -C backend lint && pnpm -C frontend lint && pnpm -C ai-service lint",
+    "typecheck": "pnpm -C backend typecheck && pnpm -C frontend typecheck && pnpm -C ai-service typecheck",
+    "test": "pnpm -C backend test && pnpm -C ai-service test",
+    "build": "pnpm -C backend build && pnpm -C frontend build && pnpm -C ai-service build",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
+    "db:migrate": "pnpm -C backend db:migrate",
+    "db:migrate:dev": "pnpm -C backend db:migrate:dev",
+    "db:reset": "pnpm -C backend db:reset",
+    "db:studio": "pnpm -C backend db:studio",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.0",
+    "concurrently": "^9.1.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.3.0",
+    "prettier": "^3.4.2"
+  }
+}

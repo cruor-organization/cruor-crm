@@ -1,0 +1,50 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+dist
+build
+.turbo
+*.tsbuildinfo
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.history
+
+# Prisma
+*.db
+*.db-journal
+
+# Supabase
+supabase/.branches
+supabase/.temp
+supabase/.env
+supabase/volumes
+
+# Coverage
+coverage
+.nyc_output
+
+# TanStack Router generated
+src/routeTree.gen.ts
+**/routeTree.gen.ts
+
+# Misc
+.cache
+*.tgz

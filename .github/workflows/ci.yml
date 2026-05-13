@@ -1,0 +1,101 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+
+jobs:
+  backend:
+    name: backend lint typecheck test build
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      BETTER_AUTH_SECRET: ci-secret-32-chars-aaaaaaaaaaaaaaaa
+      BETTER_AUTH_URL: http://localhost:3001
+      FRONTEND_URL: http://localhost:5173
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: backend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec prisma generate
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm exec tsc -p tsconfig.build.json
+
+  frontend:
+    name: frontend lint typecheck build
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm build
+
+  ai-service:
+    name: ai-service lint typecheck build
+    runs-on: ubuntu-24.04
+    env:
+      BACKEND_HMAC_SECRET: ci-secret-32-chars-bbbbbbbbbbbbbbbb
+    defaults:
+      run:
+        working-directory: ai-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: ai-service/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build

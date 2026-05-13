@@ -1,0 +1,50 @@
+# Compose alvo para Coolify (§0 deploy_target = coolify).
+# Postgres é externo (Supabase Cloud). Aqui só apps.
+# Cada serviço deploya-se independentemente — Coolify pode apontar cada
+# pasta (backend/, frontend/, ai-service/) como um deploy separado.
+
+services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: '3001'
+    expose:
+      - '3001'
+    healthcheck:
+      test: ['CMD-SHELL', "wget -qO- http://localhost:3001/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - '80'
+    healthcheck:
+      test: ['CMD-SHELL', "wget -qO- http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  ai-service:
+    build:
+      context: ../ai-service
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      AI_SERVICE_PORT: '3002'
+    expose:
+      - '3002'
+    healthcheck:
+      test: ['CMD-SHELL', "wget -qO- http://localhost:3002/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
