@@ -24,7 +24,7 @@ interface SupplierData {
   defaultLeadTimeDays: number | null;
   tags: string[];
   notes: string | null;
-  contacts: unknown[];
+  contacts: { kind: string; value: string; primary: boolean }[];
   status: string;
 }
 
@@ -52,6 +52,10 @@ const INCOTERM_LABELS: Record<string, string> = {
 export function SupplierForm({ mode, supplier, onSuccess }: SupplierFormProps) {
   type FormValues = CreateSupplierInput;
 
+  // Extrair email/telefone do array contacts para os campos auxiliares do form
+  const primaryEmailContact = supplier?.contacts.find((c) => c.kind === 'email' && c.primary);
+  const primaryPhoneContact = supplier?.contacts.find((c) => c.kind === 'phone');
+
   const form = useForm<FormValues>({
     resolver: zodResolver(mode === 'create' ? createSupplierSchema : updateSupplierSchema),
     defaultValues:
@@ -64,6 +68,8 @@ export function SupplierForm({ mode, supplier, onSuccess }: SupplierFormProps) {
             defaultLeadTimeDays: supplier.defaultLeadTimeDays ?? undefined,
             tags: supplier.tags.join(', '),
             notes: supplier.notes ?? '',
+            primaryContactEmail: primaryEmailContact?.value ?? '',
+            primaryContactPhone: primaryPhoneContact?.value ?? '',
           }
         : {
             type: 'ALIBABA_SELLER',
@@ -88,11 +94,34 @@ export function SupplierForm({ mode, supplier, onSuccess }: SupplierFormProps) {
             .filter(Boolean)
         : [];
 
-    const payload = {
-      ...data,
+    // Construir contacts[] a partir dos campos auxiliares planos
+    const contacts: { kind: 'email' | 'phone'; value: string; primary: boolean }[] = [];
+    if (data.primaryContactEmail) {
+      contacts.push({ kind: 'email', value: data.primaryContactEmail, primary: true });
+    }
+    if (data.primaryContactPhone) {
+      contacts.push({
+        kind: 'phone',
+        value: data.primaryContactPhone,
+        primary: !data.primaryContactEmail,
+      });
+    }
+
+    // Remover campos auxiliares não presentes no backend e construir payload conforme schema
+    const { primaryContactEmail: _email, primaryContactPhone: _phone, tags: _tags, ...rest } = data;
+
+    const payload: Record<string, unknown> = {
+      ...rest,
+      contacts,
       tags: tagsArr,
-      // Remover campos auxiliares não presentes no backend
     };
+
+    // Omitir strings opcionais vazias (backend .optional() + validação min rejeitaria '')
+    if (!payload.legalName) delete payload.legalName;
+    if (!payload.taxId) delete payload.taxId;
+    if (!payload.paymentTerms) delete payload.paymentTerms;
+    if (!payload.notes) delete payload.notes;
+    if (payload.defaultLeadTimeDays == null) delete payload.defaultLeadTimeDays;
 
     if (mode === 'create') {
       return api.post('/api/suppliers', payload);
@@ -155,12 +184,8 @@ export function SupplierForm({ mode, supplier, onSuccess }: SupplierFormProps) {
         </Field>
       </div>
 
-      <Field label="Contacto principal — Nome" error={errors.primaryContactName?.message}>
-        <input {...register('primaryContactName')} className={inputCls} placeholder="Nome" />
-      </Field>
-
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Email" error={errors.primaryContactEmail?.message}>
+        <Field label="Email do contacto" error={errors.primaryContactEmail?.message}>
           <input
             {...register('primaryContactEmail')}
             type="email"
@@ -169,7 +194,7 @@ export function SupplierForm({ mode, supplier, onSuccess }: SupplierFormProps) {
           />
         </Field>
 
-        <Field label="Telefone" error={errors.primaryContactPhone?.message}>
+        <Field label="Telefone do contacto" error={errors.primaryContactPhone?.message}>
           <input {...register('primaryContactPhone')} className={inputCls} placeholder="+86..." />
         </Field>
       </div>

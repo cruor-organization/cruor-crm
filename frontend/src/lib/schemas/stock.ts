@@ -1,14 +1,19 @@
 import { z } from 'zod';
 
-export const stockMovementKindValues = [
-  'IN',
-  'OUT',
-  'RESERVE',
-  'RELEASE',
-  'ADJUST',
-  'RETURN',
-  'TRANSFER_IN',
-  'TRANSFER_OUT',
+/**
+ * Subset de kinds aceites em POST /stock/movements.
+ * RESERVE, RELEASE, TRANSFER_IN, TRANSFER_OUT têm endpoints próprios — não usar aqui.
+ */
+export const movementCreateKindValues = ['IN', 'OUT', 'ADJUST', 'RETURN'] as const;
+
+export const stockMovementRefTypeValues = [
+  'ORDER',
+  'QUOTE',
+  'PURCHASE',
+  'RETURN_DOC',
+  'ADJUSTMENT',
+  'TRANSFER',
+  'NONE',
 ] as const;
 
 export const createStockLocationSchema = z
@@ -26,12 +31,20 @@ export const createStockLocationSchema = z
 
 export const updateStockLocationSchema = createStockLocationSchema.partial();
 
+/**
+ * Schema do formulário de movimento de stock.
+ * Inclui `direction` (obrigatório quando kind=ADJUST).
+ * O mutationFn omite `direction` se kind !== 'ADJUST'.
+ */
 export const createStockMovementSchema = z
   .object({
     variantId: z.string().min(1, 'Variante obrigatória'),
     locationId: z.string().min(1, 'Localização obrigatória'),
-    kind: z.enum(stockMovementKindValues, { message: 'Tipo obrigatório' }),
+    kind: z.enum(movementCreateKindValues, { message: 'Tipo obrigatório' }),
     qty: z.coerce.number().int().min(1, 'Quantidade deve ser ≥ 1'),
+    direction: z.enum(['UP', 'DOWN']).optional(),
+    refType: z.enum(stockMovementRefTypeValues).optional().default('NONE'),
+    refId: z.string().optional(),
     batch: z.string().optional(),
     reason: z.string().optional(),
   })

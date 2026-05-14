@@ -145,6 +145,22 @@ const MONTH_LABELS: Record<string, string> = {
   DEZ: 'Dez',
 };
 
+/** Mapeia código de mês UI ('JAN'…'DEZ') para número 1-12 que o backend espera em peakMonths. */
+const MONTH_CODE_TO_NUMBER: Record<string, number> = {
+  JAN: 1,
+  FEV: 2,
+  MAR: 3,
+  ABR: 4,
+  MAI: 5,
+  JUN: 6,
+  JUL: 7,
+  AGO: 8,
+  SET: 9,
+  OUT: 10,
+  NOV: 11,
+  DEZ: 12,
+};
+
 export function ProductForm({ mode, product, onSuccess }: ProductFormProps) {
   const [activeTab, setActiveTab] = useState('identidade');
 
@@ -207,10 +223,53 @@ export function ProductForm({ mode, product, onSuccess }: ProductFormProps) {
   const peakSeasons = watch('peakSeasons') ?? [];
 
   const mutationFn = async (data: CreateProductInput) => {
+    // Converter peakSeasons (string codes 'JAN'…'DEZ') em peakMonths (number[] 1-12)
+    const peakMonths = (data.peakSeasons ?? [])
+      .map((code) => MONTH_CODE_TO_NUMBER[code])
+      .filter((n): n is number => n !== undefined);
+
+    // Remover campos UI-only não presentes em createProductSchema/updateProductSchema do backend:
+    //   - decision → endpoint próprio PATCH /products/:id/decision
+    //   - score, visualScore → endpoint próprio POST /products/:id/votes
+    //   - peakSeasons → transformado em peakMonths
+    const {
+      decision: _decision,
+      score: _score,
+      visualScore: _visualScore,
+      peakSeasons: _peakSeasons,
+      batchOriginDate,
+      ...rest
+    } = data;
+
+    const payload: Record<string, unknown> = {
+      ...rest,
+      peakMonths,
+      seasonality: [], // sem UI dedicada por enquanto
+    };
+
+    // Omitir strings opcionais vazias e nulls
+    if (!payload.botanicalName) delete payload.botanicalName;
+    if (!payload.dominantColor) delete payload.dominantColor;
+    if (!payload.batchOriginDate) delete payload.batchOriginDate;
+    if (payload.materialPrimary == null) delete payload.materialPrimary;
+    if (payload.finish == null) delete payload.finish;
+    if (payload.visualStyle == null) delete payload.visualStyle;
+    if (payload.sensitivityToHumidity == null) delete payload.sensitivityToHumidity;
+    if (payload.shelfLifeMonths == null) delete payload.shelfLifeMonths;
+    if (payload.heightCm == null) delete payload.heightCm;
+    if (payload.widthCm == null) delete payload.widthCm;
+    if (payload.weightG == null) delete payload.weightG;
+    if (payload.recommendedRetailEur == null) delete payload.recommendedRetailEur;
+
+    // Converter data de string YYYY-MM-DD para Date se presente
+    if (batchOriginDate) {
+      payload.batchOriginDate = new Date(batchOriginDate);
+    }
+
     if (mode === 'create') {
-      return api.post('/api/products', data);
+      return api.post('/api/products', payload);
     } else {
-      return api.patch(`/api/products/${product!.id}`, data);
+      return api.patch(`/api/products/${product!.id}`, payload);
     }
   };
 

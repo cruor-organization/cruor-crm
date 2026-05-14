@@ -9,7 +9,7 @@ import { api } from '@/lib/api';
 import { useFormSubmit } from '@/lib/forms/useFormSubmit';
 import {
   createStockMovementSchema,
-  stockMovementKindValues,
+  movementCreateKindValues,
   type CreateStockMovementInput,
 } from '@/lib/schemas/stock';
 
@@ -28,15 +28,17 @@ interface StockMovementFormProps {
   onSuccess?: () => void;
 }
 
+/** Só os kinds aceites em POST /stock/movements (RESERVE/RELEASE/TRANSFER_* têm endpoints próprios) */
 const KIND_LABELS: Record<string, string> = {
   IN: 'Entrada',
   OUT: 'Saída',
-  RESERVE: 'Reserva',
-  RELEASE: 'Liberação',
   ADJUST: 'Ajuste',
   RETURN: 'Devolução',
-  TRANSFER_IN: 'Transferência entrada',
-  TRANSFER_OUT: 'Transferência saída',
+};
+
+const DIRECTION_LABELS: Record<string, string> = {
+  UP: 'Aumentar (UP)',
+  DOWN: 'Diminuir (DOWN)',
 };
 
 export function StockMovementForm({ onSuccess }: StockMovementFormProps) {
@@ -50,17 +52,33 @@ export function StockMovementForm({ onSuccess }: StockMovementFormProps) {
     defaultValues: {
       kind: 'IN',
       qty: 1,
+      refType: 'NONE',
     },
   });
 
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = form;
 
+  const kind = watch('kind');
+
   const mutationFn = async (data: CreateStockMovementInput) => {
-    return api.post('/api/stock/movements', data);
+    const payload: Record<string, unknown> = { ...data };
+
+    // direction só é relevante (e obrigatório) para ADJUST; omitir nos restantes
+    if (data.kind !== 'ADJUST') {
+      delete payload.direction;
+    }
+
+    // Omitir campos opcionais vazios
+    if (!payload.refId) delete payload.refId;
+    if (!payload.batch) delete payload.batch;
+    if (!payload.reason) delete payload.reason;
+
+    return api.post('/api/stock/movements', payload);
   };
 
   const { submit, isLoading, generalError } = useFormSubmit<CreateStockMovementInput, unknown>(
@@ -103,7 +121,7 @@ export function StockMovementForm({ onSuccess }: StockMovementFormProps) {
         <Field label="Tipo de movimento" required error={errors.kind?.message}>
           <Select
             {...register('kind')}
-            options={stockMovementKindValues.map((v) => ({
+            options={movementCreateKindValues.map((v) => ({
               value: v,
               label: KIND_LABELS[v] ?? v,
             }))}
@@ -114,6 +132,19 @@ export function StockMovementForm({ onSuccess }: StockMovementFormProps) {
           <input {...register('qty')} type="number" min={1} className={inputCls} placeholder="1" />
         </Field>
       </div>
+
+      {kind === 'ADJUST' && (
+        <Field label="Direção do ajuste" required error={errors.direction?.message}>
+          <Select
+            {...register('direction')}
+            placeholder="— selecionar —"
+            options={Object.entries(DIRECTION_LABELS).map(([value, label]) => ({
+              value,
+              label,
+            }))}
+          />
+        </Field>
+      )}
 
       <Field label="Lote" error={errors.batch?.message}>
         <input {...register('batch')} className={inputCls} placeholder="LOT-2025-001" />

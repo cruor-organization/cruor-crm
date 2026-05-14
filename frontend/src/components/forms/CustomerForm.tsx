@@ -169,10 +169,32 @@ export function CustomerForm({ mode, customer, onSuccess }: CustomerFormProps) {
   const peakSeasons = watch('peakSeasons') ?? [];
 
   const mutationFn = async (data: CreateCustomerInput) => {
+    // Limpar strings opcionais vazias — backend .email()/.url()/.optional() rejeita ''
+    const payload: Record<string, unknown> = {
+      ...data,
+      // Backend exige contacts[] e addresses[] (pode ser vazio)
+      contacts: [],
+      addresses: [],
+    };
+
+    if (!payload.tradingName) delete payload.tradingName;
+    if (!payload.taxId) delete payload.taxId;
+    if (!payload.taxCountry) delete payload.taxCountry;
+    if (!payload.phonePrimary) delete payload.phonePrimary;
+    if (!payload.whatsappNumber) delete payload.whatsappNumber;
+    if (!payload.email) delete payload.email;
+    if (!payload.website) delete payload.website;
+    if (!payload.instagramHandle) delete payload.instagramHandle;
+    if (!payload.salesRepId) delete payload.salesRepId;
+    if (payload.preferredChannel == null) delete payload.preferredChannel;
+    if (payload.preferredDeliveryDay == null) delete payload.preferredDeliveryDay;
+    if (payload.shopSizeSqm == null) delete payload.shopSizeSqm;
+    if (payload.estimatedMonthlyVolumeEur == null) delete payload.estimatedMonthlyVolumeEur;
+
     if (mode === 'create') {
-      return api.post('/api/customers', data);
+      return api.post('/api/customers', payload);
     } else {
-      return api.patch(`/api/customers/${customer!.id}`, data);
+      return api.patch(`/api/customers/${customer!.id}`, payload);
     }
   };
 

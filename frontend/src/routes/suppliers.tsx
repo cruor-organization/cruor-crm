@@ -19,7 +19,7 @@ interface Supplier {
   tags: string[];
   incoterms: string | null;
   notes: string | null;
-  contacts: unknown[];
+  contacts: { kind: string; value: string; primary: boolean }[];
 }
 
 interface SupplierList {

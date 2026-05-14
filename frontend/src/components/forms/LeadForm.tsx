@@ -65,7 +65,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export function LeadForm({ mode, lead, onSuccess }: LeadFormProps) {
-  type FormValues = CreateLeadInput & { status?: string };
+  type FormValues = CreateLeadInput;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(mode === 'create' ? createLeadSchema : updateLeadSchema),
@@ -77,16 +77,17 @@ export function LeadForm({ mode, lead, onSuccess }: LeadFormProps) {
             phone: lead.phone ?? '',
             whatsappNumber: lead.whatsappNumber ?? '',
             email: lead.email ?? '',
+            // city vazio; geoZone colocado em zoneCode para edição
             city: '',
             zoneCode: lead.geoZone ?? '',
             businessType: (lead.businessType as FormValues['businessType']) ?? undefined,
             source: lead.source as FormValues['source'],
             notes: lead.notes ?? '',
-            status: lead.status,
+            status: lead.status as FormValues['status'],
           }
         : {
             source: 'OTHER',
-            country: 'PT',
+            status: 'NEW',
           },
   });
 
@@ -97,10 +98,35 @@ export function LeadForm({ mode, lead, onSuccess }: LeadFormProps) {
   } = form;
 
   const mutationFn = async (data: FormValues) => {
+    // Construir geoZone a partir dos campos UI auxiliares city + zoneCode
+    const cityPart = data.city?.trim() ?? '';
+    const zonePart = data.zoneCode?.trim() ?? '';
+    const geoZone = [cityPart, zonePart].filter(Boolean).join(' — ') || undefined;
+
+    // Remover campos UI-only que o backend não conhece e construir payload conforme schema
+    const {
+      contactName: _contactName, // backend não tem campo de nome de contacto em lead
+      city: _city,
+      zoneCode: _zoneCode,
+      ...rest
+    } = data;
+
+    const payload: Record<string, unknown> = { ...rest };
+
+    if (geoZone) payload.geoZone = geoZone;
+
+    // Omitir strings opcionais vazias
+    if (!payload.legalName) delete payload.legalName;
+    if (!payload.phone) delete payload.phone;
+    if (!payload.whatsappNumber) delete payload.whatsappNumber;
+    if (!payload.email) delete payload.email;
+    if (!payload.notes) delete payload.notes;
+    if (payload.businessType == null) delete payload.businessType;
+
     if (mode === 'create') {
-      return api.post('/api/leads', data);
+      return api.post('/api/leads', payload);
     } else {
-      return api.patch(`/api/leads/${lead!.id}`, data);
+      return api.patch(`/api/leads/${lead!.id}`, payload);
     }
   };
 
@@ -182,10 +208,7 @@ export function LeadForm({ mode, lead, onSuccess }: LeadFormProps) {
       </div>
 
       {mode === 'edit' && (
-        <Field
-          label="Estado"
-          error={(errors as Record<string, { message?: string }>).status?.message}
-        >
+        <Field label="Estado" error={errors.status?.message}>
           <Select
             {...register('status')}
             options={leadStatusValues.map((v) => ({
