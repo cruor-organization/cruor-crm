@@ -52,7 +52,7 @@ function MeetingsPage() {
   return (
     <div className="-mx-6 -mt-6 flex h-[calc(100vh-4rem)] overflow-hidden">
       {/* Lista esquerda */}
-      <div className="flex w-[320px] shrink-0 flex-col border-r border-neutral-200 bg-white">
+      <div className="flex w-[320px] shrink-0 flex-col border-r border-neutral-200 bg-surface">
         <div className="border-b border-neutral-200 px-4 py-3">
           <p className="text-sm font-semibold text-neutral-900">
             Reuniões
@@ -107,7 +107,7 @@ function MeetingsPage() {
         ) : (
           <>
             {/* Cabeçalho */}
-            <div className="border-b border-neutral-200 bg-white px-6 py-4">
+            <div className="border-b border-neutral-200 bg-surface px-6 py-4">
               <PageHeader
                 title={selected.title}
                 subtitle={`${formatDate(selected.date)} · ${durationLabel(selected.durationMin)}`}
@@ -172,7 +172,7 @@ function MeetingsPage() {
                             className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
                               checked
                                 ? 'border-cruor-500 bg-cruor-500'
-                                : 'border-neutral-300 bg-white hover:border-cruor-400'
+                                : 'border-neutral-300 bg-surface hover:border-cruor-400'
                             }`}
                           >
                             {checked && (

@@ -184,7 +184,7 @@ function OrdersPage() {
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors border ${
                 active
                   ? 'bg-cruor-600 border-cruor-600 text-white'
-                  : 'bg-white border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50'
+                  : 'bg-surface border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50'
               }`}
             >
               {tab.label}
@@ -206,7 +206,7 @@ function OrdersPage() {
           Nenhuma encomenda com este estado.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-card border border-neutral-200 bg-white shadow-card">
+        <div className="overflow-x-auto rounded-card border border-neutral-200 bg-surface shadow-card">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-neutral-200 bg-neutral-50">

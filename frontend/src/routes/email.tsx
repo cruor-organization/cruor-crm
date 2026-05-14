@@ -53,7 +53,7 @@ function EnviosTab() {
   }
 
   return (
-    <div className="overflow-hidden rounded-card border border-neutral-200 bg-white shadow-card">
+    <div className="overflow-hidden rounded-card border border-neutral-200 bg-surface shadow-card">
       <table className="w-full text-sm">
         <thead className="border-b border-neutral-100 bg-neutral-50">
           <tr>
@@ -109,7 +109,7 @@ function TemplatesTab() {
       {templates.map((tmpl) => (
         <div
           key={tmpl.id}
-          className="flex flex-col justify-between rounded-card border border-neutral-200 bg-white p-5 shadow-card transition-shadow hover:shadow-card-hover"
+          className="flex flex-col justify-between rounded-card border border-neutral-200 bg-surface p-5 shadow-card transition-shadow hover:shadow-card-hover"
         >
           <div>
             <p className="font-semibold text-neutral-900">{tmpl.name}</p>

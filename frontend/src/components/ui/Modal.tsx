@@ -42,7 +42,7 @@ export function Modal({ open, onClose, title, size = 'md', children }: ModalProp
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`relative w-full ${sizeMap[size]} mx-4 max-h-[90vh] overflow-y-auto rounded-card bg-white shadow-pop`}
+        className={`relative w-full ${sizeMap[size]} mx-4 max-h-[90vh] overflow-y-auto rounded-card bg-surface shadow-pop`}
       >
         <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
           <h2 className="text-base font-semibold tracking-tight text-neutral-900">{title}</h2>

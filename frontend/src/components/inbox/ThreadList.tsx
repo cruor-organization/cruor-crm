@@ -69,7 +69,7 @@ export function ThreadList({
   });
 
   return (
-    <div className="flex h-full flex-col border-r border-neutral-200 bg-white">
+    <div className="flex h-full flex-col border-r border-neutral-200 bg-surface">
       {/* Cabeçalho + pesquisa */}
       <div className="space-y-2 border-b border-neutral-200 p-3">
         <div className="relative">
@@ -92,7 +92,7 @@ export function ThreadList({
               className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors border ${
                 filter === pill.key
                   ? 'bg-cruor-600 border-cruor-600 text-white'
-                  : 'bg-white border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50'
+                  : 'bg-surface border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50'
               }`}
             >
               {pill.label}

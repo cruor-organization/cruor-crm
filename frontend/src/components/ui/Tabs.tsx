@@ -25,7 +25,7 @@ export function Tabs({ tabs, active, onChange, children }: TabsProps) {
             onClick={() => onChange(tab.id)}
             className={`whitespace-nowrap rounded-[7px] px-3 py-1.5 text-sm font-medium transition-all duration-150 ${
               active === tab.id
-                ? 'bg-white text-neutral-900 shadow-card'
+                ? 'bg-surface text-neutral-900 shadow-card'
                 : 'text-neutral-500 hover:text-neutral-700'
             }`}
           >

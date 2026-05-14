@@ -58,7 +58,7 @@ export function PriceListsTable({ lists }: PriceListsTableProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-card border border-neutral-200 bg-white shadow-card">
+    <div className="overflow-hidden rounded-card border border-neutral-200 bg-surface shadow-card">
       <table className="w-full text-sm">
         <thead className="bg-neutral-50 text-left text-xs uppercase tracking-wide text-neutral-500">
           <tr>

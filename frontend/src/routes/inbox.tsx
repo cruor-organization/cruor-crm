@@ -87,7 +87,7 @@ function InboxPage() {
         ) : (
           <>
             {/* Cabeçalho da conversa */}
-            <div className="flex items-center gap-3 border-b border-neutral-200 bg-white px-5 py-3">
+            <div className="flex items-center gap-3 border-b border-neutral-200 bg-surface px-5 py-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-cruor-100 text-xs font-semibold text-cruor-700">
                 {selected.customerName
                   .split(' ')
@@ -125,7 +125,7 @@ function InboxPage() {
             </div>
 
             {/* Footer: texto + enviar */}
-            <div className="border-t border-neutral-200 bg-white px-4 py-3">
+            <div className="border-t border-neutral-200 bg-surface px-4 py-3">
               <div className="flex items-end gap-2">
                 <textarea
                   value={draft}

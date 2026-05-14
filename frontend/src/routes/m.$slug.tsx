@@ -42,7 +42,7 @@ function ModulePlaceholder() {
   return (
     <div className="space-y-6">
       <PageHeader title={label} subtitle={groupLabel || activeCrm.area} />
-      <div className="flex flex-col items-center justify-center rounded-card border border-neutral-200 bg-white px-6 py-20 text-center shadow-card">
+      <div className="flex flex-col items-center justify-center rounded-card border border-neutral-200 bg-surface px-6 py-20 text-center shadow-card">
         <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-cruor-50 text-cruor-600">
           <Icon size={26} />
         </span>

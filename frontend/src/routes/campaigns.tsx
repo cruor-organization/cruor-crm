@@ -67,7 +67,7 @@ function pct(v: number | undefined): string {
 
 function CampaignCard({ campaign }: { campaign: Campaign }) {
   return (
-    <div className="rounded-card border border-neutral-200 bg-white p-5 shadow-card transition-shadow hover:shadow-card-hover">
+    <div className="rounded-card border border-neutral-200 bg-surface p-5 shadow-card transition-shadow hover:shadow-card-hover">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2">
           <ChannelIcon channel={campaign.channel} />

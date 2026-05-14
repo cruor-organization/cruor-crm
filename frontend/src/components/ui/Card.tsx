@@ -42,7 +42,7 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 function CardRoot({ padding = 'md', header, className = '', children, ...props }: CardProps) {
   return (
     <div
-      className={`rounded-card border border-neutral-200 bg-white shadow-card transition-colors duration-200 hover:border-neutral-300 ${header ? '' : paddingMap[padding]} ${className}`}
+      className={`rounded-card border border-neutral-200 bg-surface shadow-card transition-colors duration-200 hover:border-neutral-300 ${header ? '' : paddingMap[padding]} ${className}`}
       {...props}
     >
       {header && <CardHeader {...header} />}

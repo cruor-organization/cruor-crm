@@ -25,4 +25,4 @@ export function Field({ label, required, error, children, className }: FieldProp
 
 // Classe CSS reutilizável para inputs, selects e textareas
 export const inputCls =
-  'w-full rounded-control border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 transition-colors duration-150 focus:border-cruor-400 focus:outline-none focus:ring-2 focus:ring-cruor-500/30 disabled:bg-neutral-50 disabled:text-neutral-400';
+  'w-full rounded-control border border-neutral-200 bg-surface px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 transition-colors duration-150 focus:border-cruor-400 focus:outline-none focus:ring-2 focus:ring-cruor-500/30 disabled:bg-neutral-50 disabled:text-neutral-400';

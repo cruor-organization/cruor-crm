@@ -110,7 +110,7 @@ function LocationsTab() {
       {isLoading && <div className="text-neutral-500">A carregar…</div>}
 
       {data && data.items.length > 0 && (
-        <div className="overflow-hidden rounded-card border border-neutral-200 bg-white shadow-card">
+        <div className="overflow-hidden rounded-card border border-neutral-200 bg-surface shadow-card">
           <table className="w-full text-sm">
             <thead className="bg-neutral-50 text-left text-xs uppercase tracking-wide text-neutral-500">
               <tr>
@@ -184,7 +184,7 @@ function LevelsTab() {
       {isLoading && <div className="text-neutral-500">A carregar…</div>}
 
       {data && data.items.length > 0 && (
-        <div className="overflow-hidden rounded-card border border-neutral-200 bg-white shadow-card">
+        <div className="overflow-hidden rounded-card border border-neutral-200 bg-surface shadow-card">
           <table className="w-full text-sm">
             <thead className="bg-neutral-50 text-left text-xs uppercase tracking-wide text-neutral-500">
               <tr>
@@ -248,7 +248,7 @@ function MovementsTab() {
       {isLoading && <div className="text-neutral-500">A carregar…</div>}
 
       {data && data.items.length > 0 && (
-        <div className="overflow-hidden rounded-card border border-neutral-200 bg-white shadow-card">
+        <div className="overflow-hidden rounded-card border border-neutral-200 bg-surface shadow-card">
           <table className="w-full text-sm">
             <thead className="bg-neutral-50 text-left text-xs uppercase tracking-wide text-neutral-500">
               <tr>
@@ -340,7 +340,7 @@ function TransfersTab() {
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
       {/* Formulário de transferência */}
-      <div className="rounded-card border border-neutral-200 bg-white p-6 shadow-card">
+      <div className="rounded-card border border-neutral-200 bg-surface p-6 shadow-card">
         <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-neutral-500">
           Nova transferência
         </h3>
@@ -408,7 +408,7 @@ function TransfersTab() {
           {movementsData?.items.map((m) => (
             <li
               key={m.id}
-              className="rounded-control border border-neutral-200 bg-white p-3 text-sm shadow-card"
+              className="rounded-control border border-neutral-200 bg-surface p-3 text-sm shadow-card"
             >
               <div className="flex items-center justify-between">
                 <span className="font-mono text-xs text-neutral-600">

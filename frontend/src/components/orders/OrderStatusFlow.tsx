@@ -63,7 +63,7 @@ export function OrderStatusFlow({ current }: OrderStatusFlowProps) {
                       ? 'border-cruor-200 bg-cruor-600 text-white ring-2 ring-cruor-200'
                       : isPast
                         ? 'border-green-600 bg-green-600 text-white'
-                        : 'border-neutral-300 bg-white text-neutral-400'
+                        : 'border-neutral-300 bg-surface text-neutral-400'
                   }`}
                 >
                   {isPast ? <CheckCircle className="h-4 w-4" /> : <span>{i + 1}</span>}

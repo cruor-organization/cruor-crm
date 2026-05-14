@@ -30,7 +30,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         className={`max-w-[75%] rounded-card px-3 py-2 text-sm ${
           isOut
             ? 'rounded-br-sm bg-cruor-50 border border-cruor-200 text-neutral-800'
-            : 'rounded-bl-sm border border-neutral-200 bg-white text-neutral-800'
+            : 'rounded-bl-sm border border-neutral-200 bg-surface text-neutral-800'
         }`}
       >
         <p className="whitespace-pre-wrap break-words leading-relaxed">{message.body}</p>

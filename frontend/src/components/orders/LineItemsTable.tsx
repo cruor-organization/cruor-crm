@@ -64,7 +64,7 @@ export function LineItemsTable({
         </thead>
         <tbody className="divide-y divide-neutral-100">
           {lines.map((line, i) => (
-            <tr key={i} className="bg-white hover:bg-neutral-50">
+            <tr key={i} className="bg-surface hover:bg-neutral-50">
               <td className="px-4 py-3 font-mono text-xs text-neutral-500">{line.variantSku}</td>
               <td className="px-4 py-3 font-medium text-neutral-900">{line.variantName}</td>
               <td className="px-4 py-3 text-right font-mono tabular-nums text-neutral-700">

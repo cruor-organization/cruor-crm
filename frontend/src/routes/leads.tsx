@@ -131,7 +131,7 @@ function LeadsPage() {
                   <h2 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
                     {COLUMN_LABELS[col]}
                   </h2>
-                  <span className="rounded-full bg-white px-2 py-0.5 text-xs font-medium text-neutral-600 shadow-card border border-neutral-100">
+                  <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-neutral-600 shadow-card border border-neutral-100">
                     {leads.length}
                   </span>
                 </div>
@@ -139,7 +139,7 @@ function LeadsPage() {
                   {leads.map((l) => (
                     <article
                       key={l.id}
-                      className="rounded-control border border-neutral-200 bg-white p-3 text-sm shadow-card"
+                      className="rounded-control border border-neutral-200 bg-surface p-3 text-sm shadow-card"
                     >
                       <h3 className="font-medium leading-tight text-neutral-900">
                         {l.tradingName}
@@ -173,7 +173,7 @@ function LeadsPage() {
                           ···
                         </button>
                         {menuOpen === l.id && (
-                          <div className="absolute right-0 z-10 mt-1 w-48 rounded-control border border-neutral-200 bg-white py-1 shadow-pop">
+                          <div className="absolute right-0 z-10 mt-1 w-48 rounded-control border border-neutral-200 bg-surface py-1 shadow-pop">
                             <button
                               type="button"
                               className="w-full px-4 py-2 text-left text-xs transition-colors hover:bg-neutral-50"

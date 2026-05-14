@@ -136,7 +136,7 @@ function PostPill({ post }: { post: SocialPost }) {
 function DayPostsPanel({ day, posts }: { day: number | null; posts: SocialPost[] }) {
   if (day === null) return null;
   return (
-    <div className="rounded-card border border-neutral-200 bg-white p-4 shadow-card">
+    <div className="rounded-card border border-neutral-200 bg-surface p-4 shadow-card">
       <p className="mb-3 text-sm font-semibold tracking-tight text-neutral-700">
         Posts — dia {day}
       </p>
@@ -242,7 +242,7 @@ function SocialPage() {
       />
 
       {/* Calendário */}
-      <div className="rounded-card border border-neutral-200 bg-white p-4 shadow-card">
+      <div className="rounded-card border border-neutral-200 bg-surface p-4 shadow-card">
         {/* Cabeçalho do mês */}
         <div className="mb-4 flex items-center justify-between">
           <button
@@ -338,7 +338,7 @@ function SocialPage() {
             {upcoming.map((post) => (
               <div
                 key={post.id}
-                className="flex items-start gap-3 rounded-card border border-neutral-200 bg-white px-4 py-3 shadow-card"
+                className="flex items-start gap-3 rounded-card border border-neutral-200 bg-surface px-4 py-3 shadow-card"
               >
                 <PlatformIcon platform={post.platform} size={16} />
                 <div className="flex-1 min-w-0">

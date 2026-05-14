@@ -51,13 +51,13 @@ function ToolCallCard({ name, input, outputJson, status }: ToolCallCardProps) {
       {expanded && (
         <div className="mt-2 space-y-1">
           <p className="text-neutral-500">Input:</p>
-          <pre className="overflow-x-auto rounded bg-white p-2 text-neutral-700">
+          <pre className="overflow-x-auto rounded bg-surface p-2 text-neutral-700">
             {JSON.stringify(input, null, 2)}
           </pre>
           {outputJson !== null && (
             <>
               <p className="text-neutral-500">Output:</p>
-              <pre className="overflow-x-auto rounded bg-white p-2 text-neutral-700">
+              <pre className="overflow-x-auto rounded bg-surface p-2 text-neutral-700">
                 {outputJson}
               </pre>
             </>
@@ -145,7 +145,7 @@ function MessageBubble({
             className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
               isUser
                 ? 'rounded-tr-sm bg-cruor-600 text-white'
-                : 'rounded-tl-sm border border-neutral-200 bg-white text-neutral-800'
+                : 'rounded-tl-sm border border-neutral-200 bg-surface text-neutral-800'
             }`}
           >
             {message.content.split('\n').map((line, i) => {
@@ -240,7 +240,7 @@ function ChatbotPage() {
   return (
     <div className="-mx-6 -mt-6 flex h-[calc(100vh-4rem)] overflow-hidden">
       {/* Sidebar esquerda: conversas */}
-      <div className="flex w-[280px] shrink-0 flex-col border-r border-neutral-200 bg-white">
+      <div className="flex w-[280px] shrink-0 flex-col border-r border-neutral-200 bg-surface">
         <div className="border-b border-neutral-200 px-4 py-3">
           <p className="text-sm font-semibold text-neutral-900">Conversas</p>
         </div>
@@ -283,7 +283,7 @@ function ChatbotPage() {
       {/* Área de chat */}
       <div className="flex flex-1 flex-col bg-neutral-50">
         {/* Cabeçalho */}
-        <div className="flex items-center gap-3 border-b border-neutral-200 bg-white px-5 py-3">
+        <div className="flex items-center gap-3 border-b border-neutral-200 bg-surface px-5 py-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cruor-100">
             <Bot className="h-4 w-4 text-cruor-700" />
           </div>
@@ -319,7 +319,7 @@ function ChatbotPage() {
         </div>
 
         {/* Input */}
-        <div className="border-t border-neutral-200 bg-white px-4 py-3">
+        <div className="border-t border-neutral-200 bg-surface px-4 py-3">
           <div className="flex items-end gap-2">
             <textarea
               value={draft}

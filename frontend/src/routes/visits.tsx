@@ -226,7 +226,7 @@ function VisitsPage() {
           Histórico ({historical.length})
         </h2>
         {!isLoading && historical.length > 0 && (
-          <div className="overflow-x-auto rounded-card border border-neutral-200 bg-white shadow-card">
+          <div className="overflow-x-auto rounded-card border border-neutral-200 bg-surface shadow-card">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-neutral-200 bg-neutral-50">

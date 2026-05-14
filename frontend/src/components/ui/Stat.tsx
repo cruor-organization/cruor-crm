@@ -21,7 +21,7 @@ export function Stat({ label, value, delta, icon }: StatProps) {
   const deltaArrow = delta?.direction === 'up' ? '▲' : delta?.direction === 'down' ? '▼' : '—';
 
   return (
-    <div className="rounded-card border border-neutral-200 bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover">
+    <div className="rounded-card border border-neutral-200 bg-surface p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover">
       {/* Cabeçalho — label à esquerda, delta em pill à direita */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-1.5">

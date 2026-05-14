@@ -112,7 +112,7 @@ function ScrapingPage() {
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-500">
           Targets ({targets.length})
         </h2>
-        <div className="overflow-hidden rounded-card border border-neutral-200 bg-white shadow-card">
+        <div className="overflow-hidden rounded-card border border-neutral-200 bg-surface shadow-card">
           <table className="w-full text-sm">
             <thead className="border-b border-neutral-100 bg-neutral-50">
               <tr>
@@ -190,7 +190,7 @@ function ScrapingPage() {
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-500">
           Histórico de execuções
         </h2>
-        <div className="overflow-hidden rounded-card border border-neutral-200 bg-white shadow-card">
+        <div className="overflow-hidden rounded-card border border-neutral-200 bg-surface shadow-card">
           <table className="w-full text-sm">
             <thead className="border-b border-neutral-100 bg-neutral-50">
               <tr>
