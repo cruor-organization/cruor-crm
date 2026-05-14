@@ -173,7 +173,7 @@ function AppShell() {
             onClick={closeDrawer}
             aria-label="Cruor — início"
           >
-            <img src="/cruor_logo_light.png" alt="Cruor" className="h-10 w-auto object-contain" />
+            <img src="/cruor_logo_light.png" alt="Cruor" className="h-14 w-auto object-contain" />
           </Link>
 
           {/* Toggle colapsar — só ícone, desktop. Centra-se no rail colapsado. */}
