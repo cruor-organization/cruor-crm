@@ -45,6 +45,13 @@ coverage
 src/routeTree.gen.ts
 **/routeTree.gen.ts
 
+# Compiled JS emitted next to TS sources (ai-service runs tsc into src/)
+ai-service/src/**/*.js
+ai-service/src/**/*.js.map
+
+# Playwright MCP output
+.playwright-mcp/
+
 # Misc
 .cache
 *.tgz
