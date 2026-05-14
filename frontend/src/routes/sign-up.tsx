@@ -1,9 +1,16 @@
+// frontend/src/routes/sign-up.tsx
+//
+// Ecrã de criação da primeira conta — usa a moldura escura partilhada
+// (AuthLayout). Só uma conta pode ser criada por aqui; fica como OWNER da
+// organização. Corre fora do AppShell.
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
+import { ArrowUpRight, Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { ACCENT, AuthLayout, inputCls } from '@/components/auth/auth-layout';
 import { signUp } from '@/lib/auth-client';
 
 const schema = z.object({
@@ -25,6 +32,7 @@ const FRIENDLY_MESSAGES: Record<string, string> = {
 function SignUp() {
   const navigate = useNavigate();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { register, handleSubmit, formState } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -46,64 +54,157 @@ function SignUp() {
   });
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center p-8">
-      <h1 className="text-2xl font-semibold">Criar primeira conta</h1>
-      <p className="mt-2 text-sm text-neutral-600">
-        Só uma conta pode ser criada por este formulário. Esta conta fica como{' '}
-        <strong>OWNER</strong> da organização. Membros adicionais entram por convite.
-      </p>
-      <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Nome</span>
-          <input
-            type="text"
-            autoComplete="name"
-            {...register('name')}
-            className="rounded-control border border-neutral-200 px-3 py-2"
-          />
-          {formState.errors.name && (
-            <span className="text-xs text-red-600">{formState.errors.name.message}</span>
+    <AuthLayout>
+      <div className="rounded-2xl border border-white/[0.07] bg-[#141416] p-8">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+          Primeiro acesso
+        </p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white">
+          Criar primeira conta
+        </h1>
+        <p className="mt-1 text-sm text-white/45">
+          Só uma conta pode ser criada por este formulário.
+        </p>
+
+        {/* Nota — esta conta fica como OWNER da organização */}
+        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-3 text-[13px] leading-relaxed text-white/45">
+          Esta conta fica como{' '}
+          <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-white/70">
+            Owner
+          </span>{' '}
+          da organização. Membros adicionais entram por convite.
+        </div>
+
+        <form onSubmit={onSubmit} className="mt-7 flex flex-col gap-5">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="name"
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40"
+            >
+              Nome
+            </label>
+            <input
+              id="name"
+              type="text"
+              autoComplete="name"
+              placeholder="O teu nome"
+              className={inputCls}
+              {...register('name')}
+            />
+            {formState.errors.name && (
+              <span className="text-xs" style={{ color: ACCENT }}>
+                {formState.errors.name.message}
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="email"
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40"
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder="nome@exemplo.pt"
+              className={inputCls}
+              {...register('email')}
+            />
+            {formState.errors.email && (
+              <span className="text-xs" style={{ color: ACCENT }}>
+                {formState.errors.email.message}
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="password"
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40"
+            >
+              Password
+              <span className="ml-2 normal-case tracking-normal text-white/25">
+                mín. 12 caracteres
+              </span>
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="new-password"
+                placeholder="••••••••••••"
+                className={`${inputCls} pr-11`}
+                {...register('password')}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Esconder password' : 'Mostrar password'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 transition-colors hover:text-white/70"
+              >
+                {showPassword ? (
+                  <EyeOff className="size-[18px]" />
+                ) : (
+                  <Eye className="size-[18px]" />
+                )}
+              </button>
+            </div>
+            {formState.errors.password && (
+              <span className="text-xs" style={{ color: ACCENT }}>
+                {formState.errors.password.message}
+              </span>
+            )}
+          </div>
+
+          {serverError && (
+            <div
+              className="rounded-xl border px-3.5 py-2.5 text-sm"
+              style={{
+                color: ACCENT,
+                borderColor: `${ACCENT}40`,
+                backgroundColor: `${ACCENT}14`,
+              }}
+            >
+              {serverError}
+            </div>
           )}
-        </label>
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Email</span>
-          <input
-            type="email"
-            autoComplete="email"
-            {...register('email')}
-            className="rounded-control border border-neutral-200 px-3 py-2"
-          />
-          {formState.errors.email && (
-            <span className="text-xs text-red-600">{formState.errors.email.message}</span>
-          )}
-        </label>
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Password (mín. 12)</span>
-          <input
-            type="password"
-            autoComplete="new-password"
-            {...register('password')}
-            className="rounded-control border border-neutral-200 px-3 py-2"
-          />
-          {formState.errors.password && (
-            <span className="text-xs text-red-600">{formState.errors.password.message}</span>
-          )}
-        </label>
-        {serverError && <p className="text-sm text-red-600">{serverError}</p>}
-        <button
-          type="submit"
-          disabled={formState.isSubmitting}
-          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
-        >
-          {formState.isSubmitting ? 'A criar...' : 'Criar conta'}
-        </button>
-      </form>
-      <p className="mt-4 text-sm text-neutral-600">
+
+          <button
+            type="submit"
+            disabled={formState.isSubmitting}
+            className="group mt-1 flex h-12 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold text-white transition-all duration-200 hover:brightness-110 disabled:pointer-events-none disabled:opacity-60"
+            style={{ backgroundColor: ACCENT }}
+          >
+            {formState.isSubmitting ? (
+              <>
+                <span className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                A criar...
+              </>
+            ) : (
+              <>
+                Criar conta
+                <ArrowUpRight
+                  size={16}
+                  className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                />
+              </>
+            )}
+          </button>
+        </form>
+      </div>
+
+      <p className="mt-6 text-center text-sm text-white/40">
         Já tens conta?{' '}
-        <Link to="/sign-in" className="underline">
+        <Link
+          to="/sign-in"
+          className="font-medium text-white transition-colors hover:text-[color:var(--accent)]"
+        >
           Entrar
         </Link>
       </p>
-    </main>
+    </AuthLayout>
   );
 }
