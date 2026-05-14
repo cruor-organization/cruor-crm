@@ -77,7 +77,8 @@ export function createApp(env: Env): CreatedApp {
     limit: 5,
     standardHeaders: 'draft-7',
     legacyHeaders: false,
-    skip: (req) => req.method === 'GET' && req.path.startsWith('/api/auth/get-session'),
+    // `req.path` is mount-relative inside `app.use('/api/auth', ...)`, so it omits the prefix.
+    skip: (req) => req.method === 'GET' && req.path.startsWith('/get-session'),
   });
   app.use('/api/auth', authLimiter, toNodeHandler(auth));
 
