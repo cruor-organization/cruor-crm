@@ -24,6 +24,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { signOut, useSession } from '@/lib/auth-client';
 import { useCrm } from '@/lib/crm/CrmProvider';
 import type { CrmId, NavGroup, NavItem } from '@/lib/crm/types';
@@ -158,14 +159,14 @@ function AppShell() {
     <div className="flex h-screen overflow-hidden">
       {drawerOpen && (
         <div
-          className="fixed inset-0 z-20 bg-ink-950/40 backdrop-blur-[2px] md:hidden"
+          className="fixed inset-0 z-20 bg-black/50 backdrop-blur-[2px] md:hidden"
           onClick={closeDrawer}
         />
       )}
 
       {/* Sidebar — superfície branca, leve, separada do canvas por um fio */}
       <aside
-        className={`fixed inset-y-0 left-0 z-30 flex w-[270px] flex-col border-r border-neutral-200 bg-white transition-[width,transform] duration-300 ease-spring md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-30 flex w-[270px] flex-col border-r border-neutral-200 bg-surface transition-[width,transform] duration-300 ease-spring md:static md:translate-x-0 ${
           drawerOpen ? 'translate-x-0' : '-translate-x-full'
         } ${collapsed ? 'md:w-[76px]' : 'md:w-[270px]'}`}
       >
@@ -258,7 +259,7 @@ function AppShell() {
 
       {/* Área principal */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="z-10 flex h-16 shrink-0 items-center gap-4 border-b border-neutral-200 bg-white px-4 shadow-topbar md:px-6">
+        <header className="z-10 flex h-16 shrink-0 items-center gap-4 border-b border-neutral-200 bg-surface px-4 shadow-topbar md:px-6">
           <button
             type="button"
             className="shrink-0 rounded-control p-1.5 text-neutral-500 transition-colors hover:bg-neutral-100 md:hidden"
@@ -272,7 +273,7 @@ function AppShell() {
               páginas do CRM. É a forma explícita de voltar à rota '/'. */}
           <Link
             to="/"
-            className="flex shrink-0 items-center gap-1.5 rounded-control border border-neutral-200 bg-white px-2.5 py-1.5 text-[13px] font-medium text-neutral-600 transition-colors hover:border-cruor-300 hover:bg-cruor-50 hover:text-cruor-700"
+            className="flex shrink-0 items-center gap-1.5 rounded-control border border-neutral-200 bg-surface px-2.5 py-1.5 text-[13px] font-medium text-neutral-600 transition-colors hover:border-cruor-300 hover:bg-cruor-50 hover:text-cruor-700"
             title="Voltar ao Hub"
           >
             <LayoutGrid size={15} className="shrink-0" />
@@ -283,7 +284,7 @@ function AppShell() {
             <Breadcrumb pathname={pathname} />
           </div>
 
-          <div className="mx-auto flex w-full max-w-md flex-1 items-center gap-2 rounded-control border border-neutral-200 bg-neutral-50 px-3 py-2 transition-colors focus-within:border-cruor-300 focus-within:bg-white focus-within:ring-2 focus-within:ring-cruor-500/10">
+          <div className="mx-auto flex w-full max-w-md flex-1 items-center gap-2 rounded-control border border-neutral-200 bg-neutral-50 px-3 py-2 transition-colors focus-within:border-cruor-300 focus-within:bg-surface focus-within:ring-2 focus-within:ring-cruor-500/10">
             <Search className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
             <input
               type="text"
@@ -292,7 +293,7 @@ function AppShell() {
               readOnly
               onFocus={(e) => e.target.blur()}
             />
-            <span className="shrink-0 rounded border border-neutral-200 bg-white px-1.5 py-0.5 font-mono text-[11px] text-neutral-400">
+            <span className="shrink-0 rounded border border-neutral-200 bg-surface px-1.5 py-0.5 font-mono text-[11px] text-neutral-400">
               ⌘K
             </span>
           </div>
@@ -300,13 +301,14 @@ function AppShell() {
           <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
-              className="relative rounded-full border border-neutral-200 bg-white p-2 text-neutral-500 transition-colors hover:bg-neutral-50 hover:text-neutral-800"
+              className="relative rounded-full border border-neutral-200 bg-surface p-2 text-neutral-500 transition-colors hover:bg-neutral-50 hover:text-neutral-800"
               aria-label="Notificações"
               onClick={() => console.info('[Cruor] Notificações — a implementar')}
             >
               <Bell size={16} />
-              <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-cruor-600 ring-2 ring-white" />
+              <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-cruor-600 ring-2 ring-surface" />
             </button>
+            <ThemeToggle />
             <Button
               variant="dark"
               size="sm"
@@ -367,7 +369,7 @@ function CrmSwitcher({ collapsed, onNavigate }: CrmSwitcherProps) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`flex w-full items-center gap-2.5 rounded-control border border-neutral-200 bg-white px-2.5 py-2 text-left transition-colors hover:bg-neutral-50 ${
+        className={`flex w-full items-center gap-2.5 rounded-control border border-neutral-200 bg-surface px-2.5 py-2 text-left transition-colors hover:bg-neutral-50 ${
           collapsed ? 'md:justify-center md:px-0' : ''
         }`}
         aria-haspopup="listbox"
@@ -393,7 +395,7 @@ function CrmSwitcher({ collapsed, onNavigate }: CrmSwitcherProps) {
 
       {open && (
         <div
-          className={`absolute z-50 w-[232px] overflow-hidden rounded-control border border-neutral-200 bg-white p-1 shadow-pop ${
+          className={`absolute z-50 w-[232px] overflow-hidden rounded-control border border-neutral-200 bg-surface p-1 shadow-pop ${
             collapsed ? 'left-0 top-0 md:left-full md:ml-2' : 'left-0 right-0 mt-1.5'
           }`}
           role="listbox"
@@ -505,7 +507,7 @@ function SidebarItem({ item, collapsed, onClick }: SidebarItemProps) {
       </Link>
 
       {collapsed && (
-        <span className="pointer-events-none absolute left-[calc(100%+10px)] top-1/2 z-50 hidden -translate-y-1/2 whitespace-nowrap rounded-control bg-ink-900 px-2.5 py-1.5 text-[12px] font-medium text-white opacity-0 shadow-pop transition-opacity duration-150 md:group-hover/item:block md:group-hover/item:opacity-100">
+        <span className="pointer-events-none absolute left-[calc(100%+10px)] top-1/2 z-50 hidden -translate-y-1/2 whitespace-nowrap rounded-control bg-ink-900 px-2.5 py-1.5 text-[12px] font-medium text-neutral-50 opacity-0 shadow-pop transition-opacity duration-150 md:group-hover/item:block md:group-hover/item:opacity-100">
           {item.label}
           {item.mock === true && <span className="ml-1.5 text-neutral-400">· mock</span>}
         </span>
