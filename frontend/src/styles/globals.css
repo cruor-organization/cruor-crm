@@ -2,11 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  TEMA — duas camadas de tokens:
+
+  1. Por-CRM, escritos INLINE no <html> por applyCrmTheme() (lib/crm/theme.ts):
+     --cruor-* (acento) e --neutral-* (estrutura). Inline vence stylesheet, por
+     isso o escuro dos neutros vem do JS (DARK_NEUTRALS), não daqui. Os valores
+     abaixo em :root são só o fallback pré-JS (preset Cruor Flora, claro).
+
+  2. Globais (não variam por CRM): cores semânticas, superfície e sombras.
+     Definidas aqui em :root (claro) e sobrepostas em :root[data-theme="dark"].
+     Sem inline → a cascata resolve sem conflito.
+*/
+
 :root {
   color-scheme: light;
 
-  /* Tema CRM por omissão (Cruor Flora). Sobreposto em runtime por
-     applyCrmTheme() — ver src/lib/crm/theme.ts. */
+  /* --- Camada 1: fallback pré-JS (Cruor Flora, claro) ------------------- */
   --cruor-50: 239 244 254;
   --cruor-100: 220 231 253;
   --cruor-200: 191 210 251;
@@ -30,11 +42,145 @@
   --neutral-900: 23 26 31;
   --neutral-950: 13 15 18;
 
-  /* Tokens semânticos — sombras/raios. Permitem um futuro dark mode trivial. */
+  /* --- Camada 2: superfície elevada ------------------------------------ */
+  /* Branco puro em claro; em escuro, um cinzento elevado (ver bloco dark).
+     bg-white foi varrido para bg-surface em todo o lado. */
+  --surface: 255 255 255;
+
+  /* --- Camada 2: cores semânticas (claro) ------------------------------ */
+  /* success — verde fresco */
+  --green-50: 233 247 239;
+  --green-100: 205 237 220;
+  --green-200: 163 220 192;
+  --green-300: 111 199 158;
+  --green-400: 69 176 126;
+  --green-500: 46 156 104;
+  --green-600: 31 157 91;
+  --green-700: 24 126 73;
+  --green-800: 22 99 59;
+  --green-900: 19 80 50;
+  /* warning — âmbar */
+  --amber-50: 253 243 227;
+  --amber-100: 250 227 188;
+  --amber-200: 243 203 131;
+  --amber-300: 234 177 82;
+  --amber-400: 224 158 55;
+  --amber-500: 211 142 38;
+  --amber-600: 176 114 28;
+  --amber-700: 140 90 24;
+  --amber-800: 113 73 24;
+  --amber-900: 93 60 22;
+  /* info — azul alinhado à marca */
+  --blue-50: 239 244 254;
+  --blue-100: 220 231 253;
+  --blue-200: 191 210 251;
+  --blue-300: 149 180 247;
+  --blue-400: 104 142 241;
+  --blue-500: 71 111 232;
+  --blue-600: 53 104 224;
+  --blue-700: 42 79 192;
+  --blue-800: 39 66 155;
+  --blue-900: 37 60 123;
+  /* danger — coral suave */
+  --red-50: 253 236 236;
+  --red-100: 250 214 215;
+  --red-200: 244 178 180;
+  --red-300: 236 133 135;
+  --red-400: 226 93 96;
+  --red-500: 214 68 74;
+  --red-600: 192 51 58;
+  --red-700: 159 42 49;
+  --red-800: 131 38 44;
+  --red-900: 109 36 41;
+  --red-950: 61 16 19;
+  /* navy escuro — botões "dark" e tooltips */
+  --ink-600: 58 68 88;
+  --ink-700: 44 52 69;
+  --ink-800: 31 38 50;
+  --ink-900: 22 27 36;
+  --ink-950: 15 19 26;
+
+  /* --- Camada 2: sombras + raios (claro) ------------------------------- */
   --shadow-card: 0 1px 2px rgb(20 24 31 / 0.04), 0 1px 3px rgb(20 24 31 / 0.03);
   --shadow-pop: 0 4px 12px rgb(20 24 31 / 0.08), 0 12px 32px rgb(20 24 31 / 0.1);
+  --shadow-card-hover: 0 1px 3px rgb(20 24 31 / 0.05), 0 6px 20px -6px rgb(20 24 31 / 0.1);
+  --shadow-topbar: 0 1px 2px rgb(20 24 31 / 0.04), 0 4px 16px -8px rgb(20 24 31 / 0.1);
+  --shadow-glow:
+    0 0 0 1px rgb(var(--cruor-600) / 0.14), 0 8px 24px -8px rgb(var(--cruor-600) / 0.3);
   --radius-card: 16px;
   --radius-control: 10px;
+}
+
+/*
+  MODO ESCURO — só Camada 2. Os neutros/acento escuros vêm de applyCrmTheme()
+  (inline). Aqui ajusta-se superfície, cores semânticas e sombras.
+
+  As escalas semânticas invertem o papel dos índices: 50 = fundo escuro tingido,
+  900 = texto vívido — igual à convenção dos neutros.
+*/
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --surface: 24 27 33;
+
+  /* success */
+  --green-50: 17 38 28;
+  --green-100: 21 51 37;
+  --green-200: 28 73 53;
+  --green-300: 38 102 73;
+  --green-400: 52 140 100;
+  --green-500: 70 168 122;
+  --green-600: 88 196 145;
+  --green-700: 130 214 170;
+  --green-800: 175 228 200;
+  --green-900: 215 242 226;
+  /* warning */
+  --amber-50: 43 32 16;
+  --amber-100: 58 42 19;
+  --amber-200: 84 60 26;
+  --amber-300: 120 84 34;
+  --amber-400: 165 116 44;
+  --amber-500: 206 146 52;
+  --amber-600: 230 168 64;
+  --amber-700: 240 192 110;
+  --amber-800: 246 214 160;
+  --amber-900: 250 232 205;
+  /* info */
+  --blue-50: 18 26 44;
+  --blue-100: 24 36 62;
+  --blue-200: 34 52 92;
+  --blue-300: 50 78 140;
+  --blue-400: 78 116 200;
+  --blue-500: 104 142 232;
+  --blue-600: 128 162 240;
+  --blue-700: 160 188 246;
+  --blue-800: 198 215 250;
+  --blue-900: 226 235 253;
+  /* danger */
+  --red-50: 46 20 22;
+  --red-100: 62 25 28;
+  --red-200: 92 34 39;
+  --red-300: 130 44 50;
+  --red-400: 178 56 62;
+  --red-500: 212 76 82;
+  --red-600: 228 100 106;
+  --red-700: 240 140 144;
+  --red-800: 246 180 182;
+  --red-900: 250 214 215;
+  --red-950: 252 232 232;
+  /* ink — invertido: ink-900 passa a claro (botões "dark" / tooltips) */
+  --ink-600: 178 184 196;
+  --ink-700: 200 205 214;
+  --ink-800: 218 222 229;
+  --ink-900: 234 236 240;
+  --ink-950: 247 248 250;
+
+  /* sombras — pretas e mais densas; em superfícies escuras a elevação
+     vem sobretudo da sombra + borda, não do contraste de luz. */
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 1px 3px rgb(0 0 0 / 0.3);
+  --shadow-pop: 0 4px 14px rgb(0 0 0 / 0.5), 0 16px 40px rgb(0 0 0 / 0.55);
+  --shadow-card-hover: 0 1px 3px rgb(0 0 0 / 0.45), 0 8px 24px -6px rgb(0 0 0 / 0.55);
+  --shadow-topbar: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 16px -8px rgb(0 0 0 / 0.55);
 }
 
 body {
