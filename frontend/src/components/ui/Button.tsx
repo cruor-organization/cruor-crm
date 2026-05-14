@@ -5,7 +5,7 @@ type ButtonSize = 'sm' | 'md' | 'lg';
 
 const variantMap: Record<ButtonVariant, string> = {
   primary: 'bg-cruor-600 text-white hover:bg-cruor-700 border-transparent',
-  dark: 'bg-neutral-900 text-white hover:bg-neutral-800 border-transparent',
+  dark: 'bg-ink-900 text-white hover:bg-ink-800 border-transparent',
   secondary:
     'bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-50 hover:border-neutral-300',
   ghost:
