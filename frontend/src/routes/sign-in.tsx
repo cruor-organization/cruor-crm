@@ -1,7 +1,7 @@
 // frontend/src/routes/sign-in.tsx
 //
-// Ecrã de login — usa a moldura escura partilhada (AuthLayout), alinhada com o
-// hub do ecossistema ('/'). Corre fora do AppShell.
+// Ecrã de login — usa a moldura partilhada (AuthLayout), alinhada com o hub do
+// ecossistema ('/'). Segue o tema global claro/escuro. Corre fora do AppShell.
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { ArrowUpRight, Check, Eye, EyeOff } from 'lucide-react';
@@ -43,18 +43,18 @@ function SignIn() {
 
   return (
     <AuthLayout>
-      <div className="rounded-2xl border border-white/[0.07] bg-[#141416] p-8">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">Acesso</p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white">
+      <div className="rounded-2xl border border-neutral-200 bg-surface p-8 shadow-card">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-neutral-500">Acesso</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900">
           Bem-vindo de volta
         </h1>
-        <p className="mt-1 text-sm text-white/45">Introduz as tuas credenciais para entrar.</p>
+        <p className="mt-1 text-sm text-neutral-600">Introduz as tuas credenciais para entrar.</p>
 
         <form onSubmit={onSubmit} className="mt-7 flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <label
               htmlFor="email"
-              className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40"
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-neutral-500"
             >
               Email
             </label>
@@ -76,7 +76,7 @@ function SignIn() {
           <div className="flex flex-col gap-2">
             <label
               htmlFor="password"
-              className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40"
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-neutral-500"
             >
               Password
             </label>
@@ -93,7 +93,7 @@ function SignIn() {
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? 'Esconder password' : 'Mostrar password'}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 transition-colors hover:text-white/70"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 transition-colors hover:text-neutral-700"
               >
                 {showPassword ? (
                   <EyeOff className="size-[18px]" />
@@ -112,17 +112,17 @@ function SignIn() {
           <div className="flex items-center justify-between">
             <label className="group flex cursor-pointer select-none items-center gap-2.5">
               <input type="checkbox" name="remember" className="peer sr-only" />
-              <span className="flex h-[18px] w-[18px] items-center justify-center rounded-md border border-white/15 bg-white/[0.04] transition-colors peer-checked:border-[color:var(--accent)] peer-checked:bg-[color:var(--accent)] peer-checked:[&>svg]:opacity-100 peer-focus-visible:ring-2 peer-focus-visible:ring-[color:var(--accent)]/40">
+              <span className="flex h-[18px] w-[18px] items-center justify-center rounded-md border border-neutral-300 bg-neutral-100 transition-colors peer-checked:border-[color:var(--accent)] peer-checked:bg-[color:var(--accent)] peer-checked:[&>svg]:opacity-100 peer-focus-visible:ring-2 peer-focus-visible:ring-[color:var(--accent)]/40">
                 <Check className="size-3 text-white opacity-0 transition-opacity" strokeWidth={3} />
               </span>
-              <span className="text-[13px] text-white/45 transition-colors group-hover:text-white/65">
+              <span className="text-[13px] text-neutral-600 transition-colors group-hover:text-neutral-800">
                 Manter sessão iniciada
               </span>
             </label>
             {/* TODO(auth): rota de recuperação de password */}
             <a
               href="#"
-              className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/35 transition-colors hover:text-white/70"
+              className="font-mono text-[10px] uppercase tracking-[0.12em] text-neutral-500 transition-colors hover:text-neutral-800"
             >
               Recuperar
             </a>
@@ -165,11 +165,11 @@ function SignIn() {
         </form>
       </div>
 
-      <p className="mt-6 text-center text-sm text-white/40">
+      <p className="mt-6 text-center text-sm text-neutral-500">
         Ainda não tens conta?{' '}
         <Link
           to="/sign-up"
-          className="font-medium text-white transition-colors hover:text-[color:var(--accent)]"
+          className="font-medium text-neutral-900 transition-colors hover:text-[color:var(--accent)]"
         >
           Criar primeira conta
         </Link>

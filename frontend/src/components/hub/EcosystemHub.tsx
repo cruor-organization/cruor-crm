@@ -2,19 +2,22 @@
 //
 // Hub do ecossistema — ponto de entrada pós-login. Cartão "CRM" é o único
 // navegável; os restantes são contexto ambiente com dados mock. Superfície
-// escura, propositadamente distinta das apps (que são claras), para sinalizar
-// "estás entre apps, não dentro de uma".
+// atmosférica que segue o tema global claro/escuro; o acento da marca-mãe e os
+// halos mantêm-se em ambos.
 import { useNavigate } from '@tanstack/react-router';
 import { animate, motion, useReducedMotion } from 'framer-motion';
 import type { Variants } from 'framer-motion';
 import { ArrowUpRight, LogOut, Receipt, Users, Workflow } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { CruorWordmark } from '@/components/auth/auth-layout';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { signOut, useSession } from '@/lib/auth-client';
 import { crmSpaces, ecosystemApps, hubStats } from '@/lib/mock-data';
 
 // Acento da marca-mãe (Cruor = sangue). Distinto dos 4 acentos dos CRMs, que
-// vivem dentro do cartão herói com identidade própria.
+// vivem dentro do cartão herói com identidade própria. Constante: funciona
+// sobre canvas claro ou escuro.
 const ACCENT = '#E23D51';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -80,21 +83,22 @@ export function EcosystemHub() {
   const flowsApp = ecosystemApps.find((a) => a.id === 'flows');
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0A0A0C] text-white">
+    <div className="relative min-h-screen overflow-hidden bg-neutral-100 text-neutral-900">
       {/* Atmosfera — halo do acento + grelha pontilhada + grão */}
       <div
         className="pointer-events-none absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full opacity-[0.22] blur-[120px]"
         style={{ background: ACCENT }}
       />
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.035]"
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
         style={{
-          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)',
+          backgroundImage:
+            'radial-gradient(circle, rgb(var(--neutral-950) / 0.9) 1px, transparent 1px)',
           backgroundSize: '26px 26px',
         }}
       />
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.4] mix-blend-soft-light"
+        className="pointer-events-none absolute inset-0 opacity-[0.35] mix-blend-soft-light"
         style={{
           backgroundImage:
             "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E\")",
@@ -110,23 +114,12 @@ export function EcosystemHub() {
           transition={{ duration: 0.6, ease: EASE }}
         >
           <div className="flex flex-col gap-4">
-            {/* O PNG do logo tem fundo escuro (#090909) e padding interno
-                grandes. Recortamos para a caixa exacta do wordmark (medida:
-                13,4–86,6% x, 40,1–58,6% y) para encostar à esquerda, alinhado
-                com o texto abaixo; mix-blend lighten dissolve o fundo escuro. */}
-            <div className="h-[30px] w-[237px] max-w-full shrink-0 self-start overflow-hidden">
-              <img
-                src="/cruor_logo_dark.png"
-                alt="Cruor"
-                className="h-[162px] w-[324px] max-w-none -translate-x-[43px] -translate-y-[65px]"
-                style={{ mixBlendMode: 'lighten' }}
-              />
-            </div>
+            <CruorWordmark className="self-start" />
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/35">
+              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-neutral-500">
                 {dateLabel}
               </p>
-              <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-white md:text-[34px]">
+              <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-neutral-900 md:text-[34px]">
                 {greeting}
                 {firstName && (
                   <>
@@ -134,20 +127,23 @@ export function EcosystemHub() {
                   </>
                 )}
               </h1>
-              <p className="mt-1 text-sm text-white/45">
+              <p className="mt-1 text-sm text-neutral-600">
                 O teu ecossistema num só sítio. Escolhe por onde começar.
               </p>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => void handleSignOut()}
-            className="flex shrink-0 items-center gap-2 rounded-full border border-white/10 px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-white/55 transition-colors hover:border-white/20 hover:text-white"
-          >
-            <LogOut size={13} />
-            <span className="hidden sm:inline">Sair</span>
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={() => void handleSignOut()}
+              className="flex items-center gap-2 rounded-full border border-neutral-200 px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-neutral-600 transition-colors hover:border-neutral-300 hover:text-neutral-900"
+            >
+              <LogOut size={13} />
+              <span className="hidden sm:inline">Sair</span>
+            </button>
+          </div>
         </motion.header>
 
         {/* ---- Bento ---- */}
@@ -176,7 +172,7 @@ export function EcosystemHub() {
 
         {/* ---- Rodapé ---- */}
         <motion.footer
-          className="mt-8 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-white/25"
+          className="mt-8 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-neutral-400"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7, duration: 0.6 }}
@@ -201,7 +197,7 @@ function CrmHeroCard({ onEnter }: { onEnter: () => void }) {
       whileHover={{ y: -4 }}
       whileTap={{ scale: 0.99 }}
       transition={{ duration: 0.3, ease: EASE }}
-      className="group relative col-span-1 flex min-h-[280px] flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-[#141416] p-7 text-left transition-colors hover:border-white/20 md:col-span-3 md:row-span-2 md:min-h-0"
+      className="group relative col-span-1 flex min-h-[280px] flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200 bg-surface p-7 text-left shadow-card transition-[colors,box-shadow] hover:border-neutral-300 hover:shadow-card-hover md:col-span-3 md:row-span-2 md:min-h-0"
     >
       {/* Halo do acento — intensifica no hover */}
       <div
@@ -210,10 +206,10 @@ function CrmHeroCard({ onEnter }: { onEnter: () => void }) {
       />
 
       <div className="relative flex items-center justify-between">
-        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-neutral-500">
           Aplicação principal
         </span>
-        <span className="flex items-center gap-1.5 rounded-full border border-white/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-white/55">
+        <span className="flex items-center gap-1.5 rounded-full border border-neutral-200 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-neutral-600">
           <span className="relative flex h-1.5 w-1.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
@@ -246,7 +242,7 @@ function CrmHeroCard({ onEnter }: { onEnter: () => void }) {
               />
               <span className="relative">{space.chip}</span>
             </div>
-            <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-white/45">
+            <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-neutral-600">
               {space.name}
             </span>
           </motion.div>
@@ -255,10 +251,10 @@ function CrmHeroCard({ onEnter }: { onEnter: () => void }) {
 
       <div className="relative flex items-end justify-between">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-white md:text-[26px]">
+          <h2 className="text-2xl font-semibold tracking-tight text-neutral-900 md:text-[26px]">
             Cruor CRM
           </h2>
-          <p className="mt-1 text-sm text-white/45">
+          <p className="mt-1 text-sm text-neutral-600">
             4 espaços comerciais — Flora, Forge, Pulse e Studio.
           </p>
         </div>
@@ -290,23 +286,23 @@ function RevenueCard() {
   return (
     <AmbientCard className="md:col-span-3">
       <div className="flex items-start justify-between">
-        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-neutral-500">
           Receita · 30 dias
         </span>
-        <span className="rounded-full bg-emerald-400/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-400">
+        <span className="rounded-full bg-emerald-400/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-500">
           {hubStats.revenueDelta}
         </span>
       </div>
 
       <div className="flex items-end justify-between gap-4">
-        <p className="text-3xl font-bold tracking-tight tabular-nums text-white md:text-[32px]">
+        <p className="text-3xl font-bold tracking-tight tabular-nums text-neutral-900 md:text-[32px]">
           {formatted}
         </p>
         <div className="flex h-12 items-end gap-1">
           {bars.map((h, i) => (
             <motion.span
               key={i}
-              className="w-1.5 rounded-full bg-white/25"
+              className="w-1.5 rounded-full bg-neutral-400"
               style={{ height: `${h * 100}%` }}
               animate={reduced ? undefined : { scaleY: [1, 0.55, 1], opacity: [0.5, 1, 0.5] }}
               transition={{
@@ -343,10 +339,10 @@ function TeamCard() {
   return (
     <AmbientCard className="md:col-span-3">
       <div className="flex items-start justify-between">
-        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-neutral-500">
           Equipa
         </span>
-        <Users size={14} className="text-white/30" />
+        <Users size={14} className="text-neutral-400" />
       </div>
 
       <div className="flex items-center justify-between gap-4">
@@ -356,10 +352,17 @@ function TeamCard() {
             return (
               <motion.div
                 key={m.initials}
-                className="relative flex h-11 w-11 items-center justify-center rounded-full border-2 border-[#141416] bg-white/[0.07] text-[12px] font-semibold text-white/70"
+                className="relative flex h-11 w-11 items-center justify-center rounded-full border-2 border-surface bg-neutral-200 text-[12px] font-semibold text-neutral-600"
                 animate={
                   isActive && !reduced
-                    ? { scale: [1, 1.12, 1], borderColor: ['#141416', ACCENT, '#141416'] }
+                    ? {
+                        scale: [1, 1.12, 1],
+                        boxShadow: [
+                          `0 0 0 0px ${ACCENT}00`,
+                          `0 0 0 2px ${ACCENT}`,
+                          `0 0 0 0px ${ACCENT}00`,
+                        ],
+                      }
                     : undefined
                 }
                 transition={{ duration: 1.4, ease: 'easeInOut' }}
@@ -367,18 +370,18 @@ function TeamCard() {
               >
                 {m.initials}
                 {m.online && (
-                  <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#141416] bg-emerald-400" />
+                  <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-surface bg-emerald-400" />
                 )}
               </motion.div>
             );
           })}
         </div>
         <div className="text-right">
-          <p className="text-2xl font-bold tabular-nums text-white">
+          <p className="text-2xl font-bold tabular-nums text-neutral-900">
             {onlineMembers.length}
-            <span className="text-base font-medium text-white/35"> / {team.length}</span>
+            <span className="text-base font-medium text-neutral-500"> / {team.length}</span>
           </p>
-          <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/40">
+          <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-neutral-500">
             online agora
           </p>
         </div>
@@ -407,26 +410,26 @@ function SoonCard({
         <div className="relative flex h-12 w-12 items-center justify-center">
           {/* Anel tracejado a rodar lentamente */}
           <motion.span
-            className="absolute inset-0 rounded-full border border-dashed border-white/15"
+            className="absolute inset-0 rounded-full border border-dashed border-neutral-300"
             animate={reduced ? undefined : { rotate: spin ? -360 : 360 }}
             transition={{ duration: spin ? 18 : 24, repeat: Infinity, ease: 'linear' }}
           />
           <motion.span
-            className="text-white/50"
+            className="text-neutral-500"
             animate={reduced ? undefined : { y: [0, -3, 0] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           >
             {icon}
           </motion.span>
         </div>
-        <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-white/40">
+        <span className="rounded-full border border-neutral-200 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-neutral-500">
           Em breve
         </span>
       </div>
 
       <div>
-        <h3 className="text-base font-semibold tracking-tight text-white/85">{name}</h3>
-        <p className="mt-0.5 text-[13px] text-white/40">{tagline}</p>
+        <h3 className="text-base font-semibold tracking-tight text-neutral-800">{name}</h3>
+        <p className="mt-0.5 text-[13px] text-neutral-500">{tagline}</p>
       </div>
     </AmbientCard>
   );
@@ -440,10 +443,10 @@ function SystemCard() {
   return (
     <AmbientCard className="md:col-span-2">
       <div className="flex items-start justify-between">
-        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-neutral-500">
           Sistema
         </span>
-        <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-emerald-400">
+        <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-emerald-500">
           {hubStats.uptimePct}
         </span>
       </div>
@@ -462,8 +465,8 @@ function SystemCard() {
           <span className="relative h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
         </div>
         <div>
-          <p className="text-base font-semibold tracking-tight text-white/85">Operacional</p>
-          <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/40">
+          <p className="text-base font-semibold tracking-tight text-neutral-800">Operacional</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-neutral-500">
             todos os serviços
           </p>
         </div>
@@ -483,7 +486,7 @@ function AmbientCard({
   return (
     <motion.div
       variants={cell}
-      className={`flex min-h-[160px] cursor-default flex-col justify-between rounded-2xl border border-white/[0.07] bg-[#141416] p-6 md:min-h-0 ${className}`}
+      className={`flex min-h-[160px] cursor-default flex-col justify-between rounded-2xl border border-neutral-200 bg-surface p-6 shadow-card md:min-h-0 ${className}`}
     >
       {children}
     </motion.div>

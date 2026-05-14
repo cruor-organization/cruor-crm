@@ -1,8 +1,8 @@
 // frontend/src/routes/sign-up.tsx
 //
-// Ecrã de criação da primeira conta — usa a moldura escura partilhada
-// (AuthLayout). Só uma conta pode ser criada por aqui; fica como OWNER da
-// organização. Corre fora do AppShell.
+// Ecrã de criação da primeira conta — usa a moldura partilhada (AuthLayout) e
+// segue o tema global claro/escuro. Só uma conta pode ser criada por aqui; fica
+// como OWNER da organização. Corre fora do AppShell.
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { ArrowUpRight, Eye, EyeOff } from 'lucide-react';
@@ -55,21 +55,21 @@ function SignUp() {
 
   return (
     <AuthLayout>
-      <div className="rounded-2xl border border-white/[0.07] bg-[#141416] p-8">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+      <div className="rounded-2xl border border-neutral-200 bg-surface p-8 shadow-card">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-neutral-500">
           Primeiro acesso
         </p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white">
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900">
           Criar primeira conta
         </h1>
-        <p className="mt-1 text-sm text-white/45">
+        <p className="mt-1 text-sm text-neutral-600">
           Só uma conta pode ser criada por este formulário.
         </p>
 
         {/* Nota — esta conta fica como OWNER da organização */}
-        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-3 text-[13px] leading-relaxed text-white/45">
+        <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-100 px-3.5 py-3 text-[13px] leading-relaxed text-neutral-600">
           Esta conta fica como{' '}
-          <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-white/70">
+          <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-neutral-800">
             Owner
           </span>{' '}
           da organização. Membros adicionais entram por convite.
@@ -79,7 +79,7 @@ function SignUp() {
           <div className="flex flex-col gap-2">
             <label
               htmlFor="name"
-              className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40"
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-neutral-500"
             >
               Nome
             </label>
@@ -101,7 +101,7 @@ function SignUp() {
           <div className="flex flex-col gap-2">
             <label
               htmlFor="email"
-              className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40"
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-neutral-500"
             >
               Email
             </label>
@@ -123,10 +123,10 @@ function SignUp() {
           <div className="flex flex-col gap-2">
             <label
               htmlFor="password"
-              className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40"
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-neutral-500"
             >
               Password
-              <span className="ml-2 normal-case tracking-normal text-white/25">
+              <span className="ml-2 normal-case tracking-normal text-neutral-400">
                 mín. 12 caracteres
               </span>
             </label>
@@ -143,7 +143,7 @@ function SignUp() {
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? 'Esconder password' : 'Mostrar password'}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 transition-colors hover:text-white/70"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 transition-colors hover:text-neutral-700"
               >
                 {showPassword ? (
                   <EyeOff className="size-[18px]" />
@@ -196,11 +196,11 @@ function SignUp() {
         </form>
       </div>
 
-      <p className="mt-6 text-center text-sm text-white/40">
+      <p className="mt-6 text-center text-sm text-neutral-500">
         Já tens conta?{' '}
         <Link
           to="/sign-in"
-          className="font-medium text-white transition-colors hover:text-[color:var(--accent)]"
+          className="font-medium text-neutral-900 transition-colors hover:text-[color:var(--accent)]"
         >
           Entrar
         </Link>
