@@ -13,6 +13,7 @@ import {
   ChevronRight,
   ChevronsUpDown,
   Home,
+  LayoutGrid,
   LogOut,
   Menu,
   PanelLeftClose,
@@ -38,6 +39,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 // Mapeamento de segmentos de rota para labels pt-PT
 const ROUTE_LABELS: Record<string, string> = {
   '': 'Dashboard',
+  dashboard: 'Dashboard',
   m: 'Módulos',
   customers: 'Floristas',
   leads: 'Potenciais',
@@ -112,9 +114,11 @@ function Breadcrumb({ pathname }: { pathname: string }) {
 
 function RootLayout() {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const isAuthRoute = path.startsWith('/sign-');
+  // O hub ('/') e as rotas de autenticação correm fora do AppShell — são
+  // superfícies de ecossistema, sem a sidebar/chrome de um CRM específico.
+  const isStandalone = path.startsWith('/sign-') || path === '/';
 
-  if (isAuthRoute) return <Outlet />;
+  if (isStandalone) return <Outlet />;
 
   return <AppShell />;
 }
@@ -263,6 +267,17 @@ function AppShell() {
           >
             <Menu size={18} />
           </button>
+
+          {/* Saída para o Hub do ecossistema — sempre visível, todas as
+              páginas do CRM. É a forma explícita de voltar à rota '/'. */}
+          <Link
+            to="/"
+            className="flex shrink-0 items-center gap-1.5 rounded-control border border-neutral-200 bg-white px-2.5 py-1.5 text-[13px] font-medium text-neutral-600 transition-colors hover:border-cruor-300 hover:bg-cruor-50 hover:text-cruor-700"
+            title="Voltar ao Hub"
+          >
+            <LayoutGrid size={15} className="shrink-0" />
+            <span className="hidden sm:inline">Hub</span>
+          </Link>
 
           <div className="hidden min-w-0 shrink-0 md:flex">
             <Breadcrumb pathname={pathname} />
