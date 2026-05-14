@@ -13,7 +13,7 @@ export function Skeleton({
 }: SkeletonProps) {
   return (
     <div
-      className={`animate-pulse rounded-md bg-neutral-200 ${height} ${width} ${className}`}
+      className={`animate-pulse rounded-control bg-neutral-200/70 ${height} ${width} ${className}`}
       {...props}
     />
   );

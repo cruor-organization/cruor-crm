@@ -1,8 +1,26 @@
-import type { HTMLAttributes } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
-interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  padding?: 'sm' | 'md' | 'lg' | 'none';
+// ---- Card.Header --------------------------------------------------------
+
+interface CardHeaderProps {
+  title: string;
+  icon?: ReactNode;
+  actions?: ReactNode;
 }
+
+function CardHeader({ title, icon, actions }: CardHeaderProps) {
+  return (
+    <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-3">
+      <div className="flex items-center gap-2">
+        {icon && <span className="text-neutral-400">{icon}</span>}
+        <span className="text-[13px] font-semibold tracking-tight text-neutral-900">{title}</span>
+      </div>
+      {actions && <div className="flex items-center gap-1">{actions}</div>}
+    </div>
+  );
+}
+
+// ---- Card ---------------------------------------------------------------
 
 const paddingMap = {
   none: '',
@@ -11,13 +29,23 @@ const paddingMap = {
   lg: 'p-6',
 } as const;
 
-export function Card({ padding = 'md', className = '', children, ...props }: CardProps) {
+interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  padding?: 'sm' | 'md' | 'lg' | 'none';
+  /** Header opcional: { title, icon?, actions? } */
+  header?: CardHeaderProps;
+}
+
+function CardRoot({ padding = 'md', header, className = '', children, ...props }: CardProps) {
   return (
     <div
-      className={`rounded-lg border border-neutral-200 bg-white shadow-sm ${paddingMap[padding]} ${className}`}
+      className={`rounded-card border border-neutral-200 bg-white shadow-card ${header ? '' : paddingMap[padding]} ${className}`}
       {...props}
     >
-      {children}
+      {header && <CardHeader {...header} />}
+      {header ? <div className={paddingMap[padding]}>{children}</div> : children}
     </div>
   );
 }
+
+// Namespace export para suporte a <Card.Header> e uso directo de <Card>
+export const Card = Object.assign(CardRoot, { Header: CardHeader });

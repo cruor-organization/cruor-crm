@@ -43,7 +43,7 @@ export function BarChart({
                   style={{ width: `${pct}%` }}
                 />
               </div>
-              <span className="w-24 shrink-0 text-xs font-medium text-neutral-700">
+              <span className="w-24 shrink-0 tabular-nums text-xs font-medium text-neutral-600">
                 {format(item.value)}
                 {item.sublabel && <span className="ml-1 text-neutral-400">{item.sublabel}</span>}
               </span>

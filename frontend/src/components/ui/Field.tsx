@@ -13,9 +13,9 @@ interface FieldProps {
 export function Field({ label, required, error, children, className }: FieldProps) {
   return (
     <div className={`flex flex-col gap-1 ${className ?? ''}`}>
-      <label className="text-sm font-medium text-neutral-700">
+      <label className="text-[13px] font-medium text-neutral-700">
         {label}
-        {required && <span className="ml-0.5 text-red-600">*</span>}
+        {required && <span className="ml-0.5 text-cruor-600">*</span>}
       </label>
       {children}
       <FieldError message={error} />
@@ -23,6 +23,6 @@ export function Field({ label, required, error, children, className }: FieldProp
   );
 }
 
-// Classe CSS reutilizável para inputs
+// Classe CSS reutilizável para inputs, selects e textareas
 export const inputCls =
-  'w-full rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500';
+  'w-full rounded-control border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 transition-colors duration-150 focus:border-cruor-400 focus:outline-none focus:ring-2 focus:ring-cruor-500/30 disabled:bg-neutral-50 disabled:text-neutral-400';

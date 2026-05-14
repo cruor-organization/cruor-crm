@@ -20,18 +20,21 @@ export function Stat({ label, value, delta, icon }: StatProps) {
         ? 'text-red-500'
         : 'text-neutral-500';
 
-  const deltaPrefix = delta?.direction === 'up' ? '↑' : delta?.direction === 'down' ? '↓' : '';
+  const deltaArrow = delta?.direction === 'up' ? '↑' : delta?.direction === 'down' ? '↓' : '→';
 
   return (
     <Card padding="md">
       <div className="flex items-start justify-between">
-        <p className="text-sm font-medium text-neutral-500">{label}</p>
-        {icon && <span className="text-neutral-400">{icon}</span>}
+        <div className="flex items-center gap-1.5">
+          {icon && <span className="text-neutral-400">{icon}</span>}
+          <p className="text-[13px] text-neutral-500">{label}</p>
+        </div>
       </div>
-      <p className="mt-2 text-2xl font-semibold text-neutral-900">{value}</p>
+      <p className="mt-2 text-2xl font-bold tabular-nums text-neutral-900 md:text-3xl">{value}</p>
       {delta && (
-        <p className={`mt-1 text-xs font-medium ${deltaColor}`}>
-          {deltaPrefix} {delta.value} vs. período anterior
+        <p className={`mt-1.5 flex items-center gap-0.5 text-xs font-medium ${deltaColor}`}>
+          <span>{deltaArrow}</span>
+          <span>{delta.value} vs. período anterior</span>
         </p>
       )}
     </Card>

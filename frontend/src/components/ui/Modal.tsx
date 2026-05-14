@@ -32,20 +32,24 @@ export function Modal({ open, onClose, title, size = 'md', children }: ModalProp
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} aria-hidden="true" />
+      <div
+        className="absolute inset-0 bg-neutral-950/40 backdrop-blur-[2px]"
+        onClick={onClose}
+        aria-hidden="true"
+      />
       {/* Dialog */}
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`relative w-full ${sizeMap[size]} mx-4 max-h-[90vh] overflow-y-auto rounded-lg bg-white shadow-xl`}
+        className={`relative w-full ${sizeMap[size]} mx-4 max-h-[90vh] overflow-y-auto rounded-card bg-white shadow-pop`}
       >
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <h2 className="text-base font-semibold text-neutral-900">{title}</h2>
+        <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
+          <h2 className="text-base font-semibold tracking-tight text-neutral-900">{title}</h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+            className="rounded-control p-1 text-neutral-400 transition-colors duration-150 hover:bg-neutral-100 hover:text-neutral-600"
           >
             <X className="h-4 w-4" />
             <span className="sr-only">Fechar</span>

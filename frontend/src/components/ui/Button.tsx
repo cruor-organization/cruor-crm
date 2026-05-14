@@ -1,12 +1,16 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+type ButtonVariant = 'primary' | 'dark' | 'secondary' | 'ghost' | 'subtle';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 const variantMap: Record<ButtonVariant, string> = {
   primary: 'bg-cruor-600 text-white hover:bg-cruor-700 border-transparent',
-  secondary: 'bg-white text-neutral-700 border-neutral-300 hover:bg-neutral-50',
-  ghost: 'bg-transparent text-neutral-700 border-transparent hover:bg-neutral-100',
+  dark: 'bg-neutral-900 text-white hover:bg-neutral-800 border-transparent',
+  secondary:
+    'bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-50 hover:border-neutral-300',
+  ghost:
+    'bg-transparent text-neutral-600 border-transparent hover:bg-neutral-100 hover:text-neutral-900',
+  subtle: 'bg-neutral-100 text-neutral-700 border-transparent hover:bg-neutral-200',
 };
 
 const sizeMap: Record<ButtonSize, string> = {
@@ -40,7 +44,7 @@ export function Button({
   return (
     <button
       disabled={loading || disabled}
-      className={`inline-flex items-center gap-2 rounded-md border font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cruor-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${variantMap[variant]} ${sizeMap[size]} ${className}`}
+      className={`inline-flex items-center gap-2 rounded-control border font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cruor-500 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 ${variantMap[variant]} ${sizeMap[size]} ${className}`}
       {...props}
     >
       {loading ? (

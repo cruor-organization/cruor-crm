@@ -15,23 +15,23 @@ interface TabsProps {
 export function Tabs({ tabs, active, onChange, children }: TabsProps) {
   return (
     <div>
-      <div className="border-b border-neutral-200">
-        <nav className="-mb-px flex gap-4" aria-label="Tabs">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => onChange(tab.id)}
-              className={`whitespace-nowrap border-b-2 pb-3 text-sm font-medium transition-colors ${
-                active === tab.id
-                  ? 'border-cruor-600 text-cruor-600'
-                  : 'border-transparent text-neutral-500 hover:border-neutral-300 hover:text-neutral-700'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
+      <div className="inline-flex rounded-control bg-neutral-100 p-1" role="tablist">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={active === tab.id}
+            onClick={() => onChange(tab.id)}
+            className={`whitespace-nowrap rounded-[7px] px-3 py-1.5 text-sm font-medium transition-all duration-150 ${
+              active === tab.id
+                ? 'bg-white text-neutral-900 shadow-card'
+                : 'text-neutral-500 hover:text-neutral-700'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
       {children && <div className="mt-4">{children}</div>}
     </div>
