@@ -84,7 +84,7 @@ function RingMark({ className = '' }: { className?: string }) {
       aria-hidden
     >
       <span className="h-2.5 w-2.5 rounded-full border-2 border-neutral-200" />
-      <span className="absolute h-1.5 w-7 -rotate-[28deg] rounded-full border border-cruor-400 shadow-[0_0_10px_rgb(53_104_224_/_0.55)]" />
+      <span className="absolute h-1.5 w-7 -rotate-[28deg] rounded-full border border-cruor-400 shadow-[0_0_10px_rgb(var(--cruor-600)_/_0.55)]" />
     </span>
   );
 }
