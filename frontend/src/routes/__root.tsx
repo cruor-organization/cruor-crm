@@ -73,22 +73,6 @@ function humanizeSegment(segment: string): string {
   return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
 }
 
-/**
- * Marca Cruor desenhada em CSS — o "O" planetário do logótipo. Vive dentro de
- * um chip navy, escala em qualquer tamanho (header, rail colapsado, favicon).
- */
-function RingMark({ className = '' }: { className?: string }) {
-  return (
-    <span
-      className={`relative grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-ink-900 ${className}`}
-      aria-hidden
-    >
-      <span className="h-2.5 w-2.5 rounded-full border-2 border-neutral-200" />
-      <span className="absolute h-1.5 w-7 -rotate-[28deg] rounded-full border border-cruor-400 shadow-[0_0_10px_rgb(var(--cruor-600)_/_0.55)]" />
-    </span>
-  );
-}
-
 function Breadcrumb({ pathname }: { pathname: string }) {
   const segments = pathname.replace(/\/$/, '').split('/').filter(Boolean);
 
@@ -181,22 +165,35 @@ function AppShell() {
           drawerOpen ? 'translate-x-0' : '-translate-x-full'
         } ${collapsed ? 'md:w-[76px]' : 'md:w-[270px]'}`}
       >
-        {/* Logo lockup */}
+        {/* Logo + toggle colapsar (topo) */}
         <div className="relative flex h-16 shrink-0 items-center px-3.5">
           <Link
             to="/"
-            className="flex min-w-0 items-center gap-2.5"
+            className={`flex min-w-0 items-center ${collapsed ? 'md:hidden' : ''}`}
             onClick={closeDrawer}
             aria-label="Cruor — início"
           >
-            <RingMark />
-            <span className={`flex min-w-0 flex-col leading-none ${collapsed ? 'md:hidden' : ''}`}>
-              <span className="text-[15px] font-semibold tracking-tight text-neutral-900">
-                Cruor
-              </span>
-              <span className="mt-1 text-[11px] text-neutral-400">Multi-CRM</span>
-            </span>
+            <img src="/cruor_logo_light.png" alt="Cruor" className="h-7 w-auto object-contain" />
           </Link>
+
+          {/* Toggle colapsar — só ícone, desktop. Centra-se no rail colapsado. */}
+          <button
+            type="button"
+            onClick={() => setCollapsed((v) => !v)}
+            className={`ml-auto hidden shrink-0 rounded-control p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 md:flex ${
+              collapsed ? 'md:mx-auto' : ''
+            }`}
+            aria-label={collapsed ? 'Expandir menu' : 'Colapsar menu'}
+            title={collapsed ? 'Expandir menu' : 'Colapsar menu'}
+          >
+            {collapsed ? (
+              <PanelLeftOpen className="h-[18px] w-[18px]" />
+            ) : (
+              <PanelLeftClose className="h-[18px] w-[18px]" />
+            )}
+          </button>
+
+          {/* Mobile: fechar drawer */}
           <button
             type="button"
             className="ml-auto rounded-control p-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 md:hidden"
@@ -224,25 +221,8 @@ function AppShell() {
           ))}
         </nav>
 
-        {/* Rodapé — toggle colapsar + perfil do utilizador */}
+        {/* Rodapé — perfil do utilizador */}
         <div className="shrink-0 border-t border-neutral-200 p-3">
-          <button
-            type="button"
-            onClick={() => setCollapsed((v) => !v)}
-            className={`mb-1.5 hidden w-full items-center gap-2.5 rounded-control px-2.5 py-2 text-[13px] font-medium text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 md:flex ${
-              collapsed ? 'md:justify-center md:px-0' : ''
-            }`}
-            aria-label={collapsed ? 'Expandir menu' : 'Colapsar menu'}
-            title={collapsed ? 'Expandir menu' : 'Colapsar menu'}
-          >
-            {collapsed ? (
-              <PanelLeftOpen className="h-[18px] w-[18px] shrink-0" />
-            ) : (
-              <PanelLeftClose className="h-[18px] w-[18px] shrink-0" />
-            )}
-            <span className={collapsed ? 'md:hidden' : ''}>Colapsar</span>
-          </button>
-
           <div
             className={`flex items-center gap-2.5 rounded-control px-1.5 py-1.5 ${
               collapsed ? 'md:justify-center md:px-0' : ''
