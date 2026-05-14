@@ -1,6 +1,6 @@
 # 02 — Remaining Work (Pendentes)
 
-**Última atualização:** 2026-05-13
+**Última atualização:** 2026-05-14
 
 Documento vivo. Mapeia o estado actual face ao `prompt.md` v3 e ao plano de fases §15. Atualizar quando uma feature passa de "pendente" para "feita".
 
@@ -8,19 +8,24 @@ Documento vivo. Mapeia o estado actual face ao `prompt.md` v3 e ao plano de fase
 
 ## Resumo executivo
 
-| Fase                      | Status  | Cobertura backend                  | Cobertura frontend             |
-| ------------------------- | ------- | ---------------------------------- | ------------------------------ |
-| 0 Bootstrap               | ✅ done | 100%                               | 100%                           |
-| 1 Núcleo Comercial        | ✅ done | 100%                               | 60% (listings sem forms reais) |
-| 2 Stock & Pricing         | 🟡 50%  | Stock 80%, Pricing 30% (só domain) | 0%                             |
-| 3 Encomendas              | ❌ 0%   | —                                  | —                              |
-| 4 Conteúdo & IA           | ❌ 0%   | stub ai-service apenas             | —                              |
-| 5 Catálogos & Campanhas   | ❌ 0%   | —                                  | —                              |
-| 6 Automação & Crescimento | ❌ 0%   | —                                  | —                              |
-| 7 Operação em Campo       | ❌ 0%   | —                                  | —                              |
-| 8 Hardening               | ❌ 0%   | —                                  | —                              |
+| Fase                      | Status  | Cobertura backend                  | Cobertura frontend                |
+| ------------------------- | ------- | ---------------------------------- | --------------------------------- |
+| 0 Bootstrap               | ✅ done | 100%                               | 100%                              |
+| 1 Núcleo Comercial        | ✅ done | 100%                               | 90% (listings + forms RHF/Zod)    |
+| 2 Stock & Pricing         | 🟡 60%  | Stock 80%, Pricing 30% (só domain) | Stock 90%, Pricing 100% (UI mock) |
+| 3 Encomendas              | 🟡 skel | —                                  | 100% skeleton (mock UI)           |
+| 4 Conteúdo & IA           | 🟡 skel | stub ai-service apenas             | 100% skeleton (mock UI)           |
+| 5 Catálogos & Campanhas   | 🟡 skel | —                                  | 100% skeleton (mock UI)           |
+| 6 Automação & Crescimento | 🟡 skel | —                                  | 100% skeleton (mock UI)           |
+| 7 Operação em Campo       | 🟡 skel | —                                  | 100% skeleton (mock UI)           |
+| 8 Hardening               | ❌ 0%   | —                                  | —                                 |
 
-**Sessão actual (2026-05-13):** pivot para construir esqueleto frontend completo com mocks, antes de implementar features novas. Objectivo: ter visão clara do produto inteiro para depois decidir prioridades em brainstorming.
+**Sessão 2026-05-13/14:** construído o esqueleto frontend completo — 33 rotas, sidebar com 9 secções, dashboard, forms reais (RHF+Zod) para as 5 entidades com backend (suppliers/customers/leads/products/stock), e UI mock rica para as fases 3-7 (encomendas, devoluções, alibaba, inbox, visitas, rotas, chatbot, reuniões, scraping, campanhas, email, social, reports, settings, catálogos, pricing). Smoke test no browser validou todas as rotas + CRUD real end-to-end. **"skel" = UI navegável com dados mock; backend dessas fases ainda não existe.**
+
+**Bugs apanhados pelo smoke test e corrigidos:**
+
+- `fix(backend)` `91c9476` — auth rate-limiter isentava `get-session` com um predicado errado (`req.path` é mount-relative dentro de `app.use('/api/auth', ...)`); session checks ficavam limitados a 5/15min.
+- `fix(frontend)` `510ad51` — os 5 forms enviavam payloads flat que o backend `.strict()` rejeitava com 400; alinhados para construir `contacts[]`/`addresses[]` e remover campos auxiliares.
 
 ---
 
@@ -131,15 +136,17 @@ Cada linha: **§ref** | **módulo** | **backend** | **frontend** | **integraçõ
 
 ### Frontend gaps
 
-- [ ] Sidebar nav agrupada (actual: 5 entradas horizontais) — esta sessão
-- [ ] Forms para Phase 1+2 entidades — esta sessão
-- [ ] Páginas Stock + Pricing — esta sessão
-- [ ] Placeholders para Phases 3-7 (com mocks) — esta sessão
-- [ ] Dashboard real com KPIs — depende de §10.1 backend
-- [ ] Inbox unificado UI — Phase 5
-- [ ] Catálogo PDF preview — Phase 5
+- [x] Sidebar nav agrupada (9 secções) — feito 2026-05-13
+- [x] Forms para Phase 1+2 entidades (RHF+Zod, payloads alinhados com backend) — feito 2026-05-14
+- [x] Páginas Stock + Pricing — feito (Stock real, Pricing mock)
+- [x] Placeholders ricos para Phases 3-7 (mocks com tabelas/kanbans/charts) — feito
+- [ ] Dashboard real com KPIs — actualmente mock; depende de §10.1 backend
+- [ ] Inbox unificado UI **real** — actualmente mock; depende de Evolution API + Resend inbound (Phase 5)
+- [ ] Catálogo PDF preview **real** — actualmente mock; Phase 5
+- [ ] Detail pages com edição para entidades Phase 3+ (orders/$id etc. são mock read-only)
 - [ ] Mobile/PWA layout para Phase 7 (visitas em campo)
 - [ ] Component tests + e2e — Phase 8
+- [ ] Substituir mocks por dados reais à medida que cada backend de fase é construído
 
 ### Integrações externas (ainda não wired)
 
@@ -173,11 +180,12 @@ Cada linha: **§ref** | **módulo** | **backend** | **frontend** | **integraçõ
 
 ### Dívida técnica conhecida
 
-- [ ] `ai-service/src/*.js` + `*.js.map` tracked em git (commit `b27297a`, A7 Plan 1) — adicionar a `.gitignore` + `git rm --cached`
+- [x] `ai-service/src/*.js` + `*.js.map` tracked em git — resolvido `efe2242` (.gitignore + git rm --cached)
 - [ ] `lint-staged.config.js` history split entre A2 e A3 — cosmético, sem fix
 - [ ] `exactOptionalPropertyTypes: false` nos tsconfigs — reavaliar Phase 8
-- [ ] Schemas Zod duplicados backend ↔ frontend (consequência ADR-0002) — sem fix, aceite
+- [ ] Schemas Zod duplicados backend ↔ frontend (consequência ADR-0002) — sem fix, aceite. **Nota:** o smoke test mostrou que a duplicação é frágil — os forms iniciais divergiram do backend e davam 400. Mitigado em `510ad51` mas a divergência pode voltar; considerar um teste de contrato ou um package partilhado se reincidir.
 - [ ] Modelos Phase 1 sem UI: bundles (schema), returns/routes/visits (não existem ainda) — fechar via Phase 5+
+- [ ] Mock UI das fases 3-7 vai precisar de ser religada a backend real quando cada fase for construída — o esqueleto é descartável por design, mas os componentes de apresentação (tabelas, badges, OrderStatusFlow, etc.) são reaproveitáveis
 
 ---
 
