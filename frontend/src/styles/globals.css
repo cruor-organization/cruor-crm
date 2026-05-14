@@ -5,28 +5,42 @@
 :root {
   color-scheme: light;
 
+  /* Tema CRM por omissão (Cruor Flora). Sobreposto em runtime por
+     applyCrmTheme() — ver src/lib/crm/theme.ts. */
+  --cruor-50: 239 244 254;
+  --cruor-100: 220 231 253;
+  --cruor-200: 191 210 251;
+  --cruor-300: 149 180 247;
+  --cruor-400: 104 142 241;
+  --cruor-500: 71 111 232;
+  --cruor-600: 53 104 224;
+  --cruor-700: 42 79 192;
+  --cruor-800: 39 66 155;
+  --cruor-900: 37 60 123;
+  --cruor-950: 26 38 75;
+  --neutral-50: 248 249 250;
+  --neutral-100: 238 240 242;
+  --neutral-200: 227 229 233;
+  --neutral-300: 208 211 217;
+  --neutral-400: 165 170 179;
+  --neutral-500: 124 130 140;
+  --neutral-600: 90 96 107;
+  --neutral-700: 63 68 78;
+  --neutral-800: 39 43 51;
+  --neutral-900: 23 26 31;
+  --neutral-950: 13 15 18;
+
   /* Tokens semânticos — sombras/raios. Permitem um futuro dark mode trivial. */
-  --shadow-card: 0 1px 2px rgb(15 14 12 / 0.04), 0 2px 8px rgb(15 14 12 / 0.03);
-  --shadow-pop: 0 4px 12px rgb(15 14 12 / 0.08), 0 12px 32px rgb(15 14 12 / 0.1);
-  --radius-card: 14px;
+  --shadow-card: 0 1px 2px rgb(20 24 31 / 0.04), 0 1px 3px rgb(20 24 31 / 0.03);
+  --shadow-pop: 0 4px 12px rgb(20 24 31 / 0.08), 0 12px 32px rgb(20 24 31 / 0.1);
+  --radius-card: 16px;
   --radius-control: 10px;
 }
 
 body {
-  @apply bg-neutral-50 font-sans text-neutral-900 antialiased;
+  @apply bg-neutral-100 font-sans text-neutral-900 antialiased;
   margin: 0;
   font-feature-settings: 'cv05', 'ss03';
-}
-
-/* Grão quase-impercetível para dar tactilidade ao canvas sem ruído visual. */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.015;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 #root {

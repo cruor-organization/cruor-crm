@@ -3,96 +3,106 @@ import type { Config } from 'tailwindcss';
 /**
  * Cruor design tokens — fonte única de verdade do tema.
  *
- * Estratégia: `cruor` é a escala de marca (acento carmim). As escalas
+ * Estratégia: `cruor` é a escala de marca (acento azul SaaS). As escalas
  * `neutral`, `green`, `amber`, `blue`, `red` são OVERRIDDEN — mantêm o nome
  * Tailwind mas ganham valores Cruor-coesos, por isso o código existente que
- * usa `neutral-*`/`green-*`/etc. actualiza sem sweep.
+ * usa `neutral-*`/`green-*`/etc. actualiza sem sweep. `ink` = navy escuro
+ * para superfícies/botões "dark".
  */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        // Marca — oxblood/carmim (o anel planetário do logo). 600 = primary.
+        // Marca — acento do CRM ativo. Valores em CSS vars (ver globals.css +
+        // lib/crm/theme.ts); trocam em runtime ao mudar de CRM.
         cruor: {
-          50: '#FBF1F2',
-          100: '#F6DEE0',
-          200: '#ECBEC2',
-          300: '#DD9097',
-          400: '#C95863',
-          500: '#B23A45',
-          600: '#97232E',
-          700: '#7C1F28',
-          800: '#671E25',
-          900: '#581D23',
-          950: '#310C10',
+          50: 'rgb(var(--cruor-50) / <alpha-value>)',
+          100: 'rgb(var(--cruor-100) / <alpha-value>)',
+          200: 'rgb(var(--cruor-200) / <alpha-value>)',
+          300: 'rgb(var(--cruor-300) / <alpha-value>)',
+          400: 'rgb(var(--cruor-400) / <alpha-value>)',
+          500: 'rgb(var(--cruor-500) / <alpha-value>)',
+          600: 'rgb(var(--cruor-600) / <alpha-value>)',
+          700: 'rgb(var(--cruor-700) / <alpha-value>)',
+          800: 'rgb(var(--cruor-800) / <alpha-value>)',
+          900: 'rgb(var(--cruor-900) / <alpha-value>)',
+          950: 'rgb(var(--cruor-950) / <alpha-value>)',
         },
-        // Override: carvão levemente quente (ecoa o metal escovado do wordmark).
+        // Estrutura — neutros do CRM ativo (temperatura varia por CRM). CSS vars.
         neutral: {
-          50: '#F7F6F4',
-          100: '#EEEDEA',
-          200: '#E2E0DC',
-          300: '#CBC8C2',
-          400: '#A6A39C',
-          500: '#807D76',
-          600: '#5F5C56',
-          700: '#45423D',
-          800: '#2A2825',
-          900: '#1B1A17',
-          950: '#0F0E0C',
+          50: 'rgb(var(--neutral-50) / <alpha-value>)',
+          100: 'rgb(var(--neutral-100) / <alpha-value>)',
+          200: 'rgb(var(--neutral-200) / <alpha-value>)',
+          300: 'rgb(var(--neutral-300) / <alpha-value>)',
+          400: 'rgb(var(--neutral-400) / <alpha-value>)',
+          500: 'rgb(var(--neutral-500) / <alpha-value>)',
+          600: 'rgb(var(--neutral-600) / <alpha-value>)',
+          700: 'rgb(var(--neutral-700) / <alpha-value>)',
+          800: 'rgb(var(--neutral-800) / <alpha-value>)',
+          900: 'rgb(var(--neutral-900) / <alpha-value>)',
+          950: 'rgb(var(--neutral-950) / <alpha-value>)',
         },
-        // Override: success — verde-sálvia muted.
+        // Override: success — verde fresco para deltas positivos.
         green: {
-          50: '#EEF6F1',
-          100: '#D6EBDF',
-          200: '#AFD7C0',
-          300: '#82BE9C',
-          400: '#5EA77F',
-          500: '#4A9D6E',
-          600: '#3B7F58',
-          700: '#2F6647',
-          800: '#27513A',
-          900: '#214330',
+          50: '#E9F7EF',
+          100: '#CDEDDC',
+          200: '#A3DCC0',
+          300: '#6FC79E',
+          400: '#45B07E',
+          500: '#2E9C68',
+          600: '#1F9D5B',
+          700: '#187E49',
+          800: '#16633B',
+          900: '#135032',
         },
-        // Override: warning — âmbar muted.
+        // Override: warning — âmbar.
         amber: {
-          50: '#FBF3E4',
-          100: '#F5E3BE',
-          200: '#EBCB85',
-          300: '#DEB052',
-          400: '#D29E3C',
-          500: '#C8912E',
-          600: '#A9761F',
-          700: '#8A5F1A',
-          800: '#6F4D18',
-          900: '#5C4016',
+          50: '#FDF3E3',
+          100: '#FAE3BC',
+          200: '#F3CB83',
+          300: '#EAB152',
+          400: '#E09E37',
+          500: '#D38E26',
+          600: '#B0721C',
+          700: '#8C5A18',
+          800: '#714918',
+          900: '#5D3C16',
         },
-        // Override: info — azul calmo.
+        // Override: info — azul alinhado à marca.
         blue: {
-          50: '#EDF2FB',
-          100: '#D5E1F4',
-          200: '#AFC6E9',
-          300: '#82A5DA',
-          400: '#5E89CD',
-          500: '#4A78C4',
-          600: '#3A60A3',
-          700: '#2F4E85',
-          800: '#29406C',
-          900: '#24375A',
+          50: '#EFF4FE',
+          100: '#DCE7FD',
+          200: '#BFD2FB',
+          300: '#95B4F7',
+          400: '#688EF1',
+          500: '#476FE8',
+          600: '#3568E0',
+          700: '#2A4FC0',
+          800: '#27429B',
+          900: '#253C7B',
         },
-        // Override: danger — alinhado ao carmim de marca (destrutivo = vermelho Cruor).
+        // Override: danger — coral suave para deltas negativos / destrutivo.
         red: {
-          50: '#FBF1F2',
-          100: '#F6DEE0',
-          200: '#ECBEC2',
-          300: '#DD9097',
-          400: '#C95863',
-          500: '#B23A45',
-          600: '#97232E',
-          700: '#7C1F28',
-          800: '#671E25',
-          900: '#581D23',
-          950: '#310C10',
+          50: '#FDECEC',
+          100: '#FAD6D7',
+          200: '#F4B2B4',
+          300: '#EC8587',
+          400: '#E25D60',
+          500: '#D6444A',
+          600: '#C0333A',
+          700: '#9F2A31',
+          800: '#83262C',
+          900: '#6D2429',
+          950: '#3D1013',
+        },
+        // Navy escuro — botões "dark" (estilo "Exports") e o chip do logótipo.
+        ink: {
+          600: '#3A4458',
+          700: '#2C3445',
+          800: '#1F2632',
+          900: '#161B24',
+          950: '#0F131A',
         },
       },
       fontFamily: {
@@ -100,13 +110,18 @@ export default {
         mono: ['"JetBrains Mono Variable"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       borderRadius: {
-        card: '14px',
+        card: '16px',
         control: '10px',
       },
       boxShadow: {
-        card: '0 1px 2px rgb(15 14 12 / 0.04), 0 2px 8px rgb(15 14 12 / 0.03)',
-        pop: '0 4px 12px rgb(15 14 12 / 0.08), 0 12px 32px rgb(15 14 12 / 0.10)',
-        'card-hover': '0 1px 2px rgb(15 14 12 / 0.05), 0 4px 16px rgb(15 14 12 / 0.06)',
+        // Sombras suaves e frias — painéis brancos sobre canvas cinza-claro.
+        card: '0 1px 2px rgb(20 24 31 / 0.04), 0 1px 3px rgb(20 24 31 / 0.03)',
+        pop: '0 4px 12px rgb(20 24 31 / 0.08), 0 12px 32px rgb(20 24 31 / 0.10)',
+        'card-hover': '0 1px 3px rgb(20 24 31 / 0.05), 0 6px 20px -6px rgb(20 24 31 / 0.10)',
+        // Topbar — fio de elevação subtil sobre o canvas.
+        topbar: '0 1px 2px rgb(20 24 31 / 0.04), 0 4px 16px -8px rgb(20 24 31 / 0.10)',
+        // Halo azul — foco em CTA primário / elementos de marca.
+        glow: '0 0 0 1px rgb(53 104 224 / 0.14), 0 8px 24px -8px rgb(53 104 224 / 0.30)',
       },
       keyframes: {
         'fade-rise': {
@@ -116,6 +131,9 @@ export default {
       },
       animation: {
         'fade-rise': 'fade-rise 0.4s cubic-bezier(0.16, 1, 0.3, 1) both',
+      },
+      transitionTimingFunction: {
+        spring: 'cubic-bezier(0.16, 1, 0.3, 1)',
       },
     },
   },
