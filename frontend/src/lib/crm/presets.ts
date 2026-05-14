@@ -392,5 +392,5 @@ export const CRMS: CrmPreset[] = [
 ];
 
 export function getCrmPreset(id: CrmId): CrmPreset {
-  return CRMS.find((c) => c.id === id) ?? (CRMS[0] as CrmPreset);
+  return CRMS.find((c) => c.id === id) ?? CRMS[0]!;
 }

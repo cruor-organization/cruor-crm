@@ -33,6 +33,7 @@ export function CrmProvider({ children }: { children: ReactNode }) {
   return <CrmContext.Provider value={value}>{children}</CrmContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCrm(): CrmContextValue {
   const ctx = useContext(CrmContext);
   if (!ctx) {
