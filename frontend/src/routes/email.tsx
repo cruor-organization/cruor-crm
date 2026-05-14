@@ -53,7 +53,7 @@ function EnviosTab() {
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+    <div className="overflow-hidden rounded-card border border-neutral-200 bg-white shadow-card">
       <table className="w-full text-sm">
         <thead className="border-b border-neutral-100 bg-neutral-50">
           <tr>
@@ -109,7 +109,7 @@ function TemplatesTab() {
       {templates.map((tmpl) => (
         <div
           key={tmpl.id}
-          className="flex flex-col justify-between rounded-xl border border-neutral-200 bg-white p-5 transition-shadow hover:shadow-md"
+          className="flex flex-col justify-between rounded-card border border-neutral-200 bg-white p-5 shadow-card transition-shadow hover:shadow-card-hover"
         >
           <div>
             <p className="font-semibold text-neutral-900">{tmpl.name}</p>
@@ -171,12 +171,12 @@ function EmailPage() {
             <input
               type="text"
               placeholder="Ex: Newsletter Junho 2026"
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
+              className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-neutral-700">Template</label>
-            <select className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500">
+            <select className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500">
               <option value="newsletter-monthly">Newsletter mensal</option>
               <option value="promotional">Promoção / campanha</option>
               <option value="welcome">Boas-vindas</option>
@@ -187,7 +187,7 @@ function EmailPage() {
             <input
               type="text"
               placeholder="Ex: Subscritores newsletter"
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
+              className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <p className="text-xs text-neutral-400">Mock — nenhum email será enviado via Resend.</p>

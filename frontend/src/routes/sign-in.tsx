@@ -44,7 +44,7 @@ function SignIn() {
             type="email"
             autoComplete="email"
             {...register('email')}
-            className="rounded-md border border-neutral-300 px-3 py-2"
+            className="rounded-control border border-neutral-200 px-3 py-2"
           />
           {formState.errors.email && (
             <span className="text-xs text-red-600">{formState.errors.email.message}</span>
@@ -56,7 +56,7 @@ function SignIn() {
             type="password"
             autoComplete="current-password"
             {...register('password')}
-            className="rounded-md border border-neutral-300 px-3 py-2"
+            className="rounded-control border border-neutral-200 px-3 py-2"
           />
           {formState.errors.password && (
             <span className="text-xs text-red-600">{formState.errors.password.message}</span>

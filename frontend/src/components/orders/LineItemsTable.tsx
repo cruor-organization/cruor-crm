@@ -35,7 +35,7 @@ export function LineItemsTable({
   totalEur,
 }: LineItemsTableProps) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-neutral-200">
+    <div className="overflow-x-auto rounded-card border border-neutral-200 shadow-card">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-neutral-200 bg-neutral-50">
@@ -67,11 +67,13 @@ export function LineItemsTable({
             <tr key={i} className="bg-white hover:bg-neutral-50">
               <td className="px-4 py-3 font-mono text-xs text-neutral-500">{line.variantSku}</td>
               <td className="px-4 py-3 font-medium text-neutral-900">{line.variantName}</td>
-              <td className="px-4 py-3 text-right text-neutral-700">{line.qty}</td>
-              <td className="px-4 py-3 text-right text-neutral-700">
+              <td className="px-4 py-3 text-right font-mono tabular-nums text-neutral-700">
+                {line.qty}
+              </td>
+              <td className="px-4 py-3 text-right font-mono tabular-nums text-neutral-700">
                 {formatEur(line.unitPriceEur)}
               </td>
-              <td className="px-4 py-3 text-right text-neutral-700">
+              <td className="px-4 py-3 text-right font-mono tabular-nums text-neutral-700">
                 {line.discountPct > 0 ? (
                   <span className="text-amber-700">{line.discountPct}%</span>
                 ) : (
@@ -83,7 +85,7 @@ export function LineItemsTable({
                   {SOURCE_LABEL[line.pricingSource]}
                 </Badge>
               </td>
-              <td className="px-4 py-3 text-right font-medium text-neutral-900">
+              <td className="px-4 py-3 text-right font-mono tabular-nums font-medium text-neutral-900">
                 {formatEur(line.lineTotalEur)}
               </td>
             </tr>
@@ -94,7 +96,7 @@ export function LineItemsTable({
             <td colSpan={6} className="px-4 py-2 text-right text-sm text-neutral-600">
               Subtotal
             </td>
-            <td className="px-4 py-2 text-right font-medium text-neutral-900">
+            <td className="px-4 py-2 text-right font-mono tabular-nums font-medium text-neutral-900">
               {formatEur(subtotalEur)}
             </td>
           </tr>
@@ -102,7 +104,7 @@ export function LineItemsTable({
             <td colSpan={6} className="px-4 py-2 text-right text-sm text-neutral-600">
               IVA {vatPct > 0 ? `(${vatPct}%)` : '(isento)'}
             </td>
-            <td className="px-4 py-2 text-right font-medium text-neutral-900">
+            <td className="px-4 py-2 text-right font-mono tabular-nums font-medium text-neutral-900">
               {vatPct > 0 ? formatEur(vatEur) : <span className="text-neutral-400">—</span>}
             </td>
           </tr>
@@ -113,7 +115,7 @@ export function LineItemsTable({
             >
               Total
             </td>
-            <td className="px-4 py-2.5 text-right text-base font-bold text-neutral-900">
+            <td className="px-4 py-2.5 text-right font-mono tabular-nums text-base font-bold text-neutral-900">
               {formatEur(totalEur)}
             </td>
           </tr>

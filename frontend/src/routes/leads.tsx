@@ -105,7 +105,9 @@ function LeadsPage() {
     <section>
       <header className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Floristas Potenciais</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
+            Floristas Potenciais
+          </h1>
           <p className="text-sm text-neutral-500">
             Pipeline em Kanban — {data ? `${data.total} leads` : 'a carregar…'}
           </p>
@@ -123,22 +125,26 @@ function LeadsPage() {
             return (
               <div
                 key={col}
-                className={`rounded-md border ${COLUMN_COLORS[col]} flex min-h-96 flex-col p-3`}
+                className={`rounded-card border ${COLUMN_COLORS[col]} flex min-h-96 flex-col p-3`}
               >
                 <div className="mb-3 flex items-center justify-between">
-                  <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-700">
+                  <h2 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
                     {COLUMN_LABELS[col]}
                   </h2>
-                  <span className="rounded-full bg-white px-2 py-0.5 text-xs">{leads.length}</span>
+                  <span className="rounded-full bg-white px-2 py-0.5 text-xs font-medium text-neutral-600 shadow-card border border-neutral-100">
+                    {leads.length}
+                  </span>
                 </div>
                 <div className="flex flex-col gap-2">
                   {leads.map((l) => (
                     <article
                       key={l.id}
-                      className="rounded-md border bg-white p-3 text-sm shadow-sm"
+                      className="rounded-control border border-neutral-200 bg-white p-3 text-sm shadow-card"
                     >
-                      <h3 className="font-medium leading-tight">{l.tradingName}</h3>
-                      <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs text-neutral-500">
+                      <h3 className="font-medium leading-tight text-neutral-900">
+                        {l.tradingName}
+                      </h3>
+                      <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[12px] text-neutral-500">
                         {l.businessType && <span>{l.businessType}</span>}
                         {l.geoZone && <span>· {l.geoZone}</span>}
                       </div>
@@ -158,19 +164,19 @@ function LeadsPage() {
                       </div>
 
                       {/* Menu de ações */}
-                      <div className="relative mt-2 border-t pt-2">
+                      <div className="relative mt-2 border-t border-neutral-100 pt-2">
                         <button
                           type="button"
-                          className="text-xs text-neutral-500 hover:text-neutral-700"
+                          className="text-xs text-neutral-400 transition-colors hover:text-neutral-700"
                           onClick={() => setMenuOpen(menuOpen === l.id ? null : l.id)}
                         >
                           ···
                         </button>
                         {menuOpen === l.id && (
-                          <div className="absolute right-0 z-10 mt-1 w-48 rounded-md border bg-white py-1 shadow-md">
+                          <div className="absolute right-0 z-10 mt-1 w-48 rounded-control border border-neutral-200 bg-white py-1 shadow-pop">
                             <button
                               type="button"
-                              className="w-full px-4 py-2 text-left text-xs hover:bg-neutral-50"
+                              className="w-full px-4 py-2 text-left text-xs transition-colors hover:bg-neutral-50"
                               onClick={() => {
                                 setEditTarget(l);
                                 setMenuOpen(null);
@@ -181,7 +187,7 @@ function LeadsPage() {
                             {NEXT_STATUS[l.status] && (
                               <button
                                 type="button"
-                                className="w-full px-4 py-2 text-left text-xs hover:bg-neutral-50"
+                                className="w-full px-4 py-2 text-left text-xs transition-colors hover:bg-neutral-50"
                                 onClick={() => void handleAdvanceStatus(l)}
                               >
                                 Avançar → {COLUMN_LABELS[NEXT_STATUS[l.status]!]}
@@ -190,7 +196,7 @@ function LeadsPage() {
                             {l.status !== 'WON' && l.status !== 'LOST' && (
                               <button
                                 type="button"
-                                className="w-full px-4 py-2 text-left text-xs text-cruor-600 hover:bg-neutral-50"
+                                className="w-full px-4 py-2 text-left text-xs text-cruor-600 transition-colors hover:bg-neutral-50"
                                 onClick={() => void handleConvert(l)}
                               >
                                 Converter em florista

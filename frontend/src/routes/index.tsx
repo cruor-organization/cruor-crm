@@ -62,10 +62,15 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Dashboard" subtitle="Visão geral do negócio" />
+      <div style={{ animationDelay: '0ms' }} className="animate-fade-rise">
+        <PageHeader title="Dashboard" subtitle="Visão geral do negócio" />
+      </div>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div
+        style={{ animationDelay: '60ms' }}
+        className="animate-fade-rise grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      >
         {kpisLoading
           ? Array.from({ length: 4 }).map((_, i) => (
               <Card key={i} padding="md">
@@ -81,28 +86,35 @@ function Dashboard() {
 
       {/* Alertas */}
       {alerts && alerts.length > 0 && (
-        <Card padding="md">
-          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-neutral-900">
-            <AlertTriangle size={15} className="text-amber-500" />
-            Alertas
-          </h2>
-          <ul className="space-y-2">
-            {alerts.map((alert) => (
-              <li key={alert.id} className="flex items-start gap-2">
-                <Badge variant={alert.severity === 'danger' ? 'danger' : 'warning'}>
-                  {alert.severity === 'danger' ? 'Crítico' : 'Atenção'}
-                </Badge>
-                <span className="text-sm text-neutral-700">{alert.message}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
+        <div style={{ animationDelay: '120ms' }} className="animate-fade-rise">
+          <Card padding="md">
+            <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold tracking-tight text-neutral-900">
+              <AlertTriangle size={15} className="text-amber-500" />
+              Alertas
+            </h2>
+            <ul className="space-y-2">
+              {alerts.map((alert) => (
+                <li key={alert.id} className="flex items-start gap-2">
+                  <Badge variant={alert.severity === 'danger' ? 'danger' : 'warning'}>
+                    {alert.severity === 'danger' ? 'Crítico' : 'Atenção'}
+                  </Badge>
+                  <span className="text-sm text-neutral-700">{alert.message}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </div>
       )}
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div
+        style={{ animationDelay: '180ms' }}
+        className="animate-fade-rise grid grid-cols-1 gap-6 lg:grid-cols-3"
+      >
         {/* Actividade recente */}
         <Card padding="md" className="lg:col-span-2">
-          <h2 className="mb-4 text-sm font-semibold text-neutral-900">Actividade recente</h2>
+          <h2 className="mb-4 text-sm font-semibold tracking-tight text-neutral-900">
+            Actividade recente
+          </h2>
           {activityLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -120,7 +132,7 @@ function Dashboard() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm text-neutral-800">{event.description}</p>
-                      <p className="mt-0.5 text-xs text-neutral-400">
+                      <p className="mt-0.5 font-mono text-[11px] text-neutral-400">
                         {event.actor} · {event.timestamp}
                       </p>
                     </div>
@@ -133,7 +145,7 @@ function Dashboard() {
 
         {/* Próximas visitas */}
         <Card padding="md">
-          <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-neutral-900">
+          <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-tight text-neutral-900">
             <Calendar size={14} className="text-cruor-600" />
             Próximas visitas
           </h2>
@@ -148,7 +160,7 @@ function Dashboard() {
               {visits?.map((visit) => (
                 <li
                   key={visit.id}
-                  className="rounded-lg border border-neutral-100 bg-neutral-50 p-3"
+                  className="rounded-control border border-neutral-100 bg-neutral-50 p-3"
                 >
                   <p className="text-sm font-medium text-neutral-900">{visit.floristName}</p>
                   <p className="mt-0.5 flex items-center gap-1 text-xs text-neutral-500">
@@ -157,7 +169,7 @@ function Dashboard() {
                   </p>
                   <div className="mt-2 flex items-center justify-between">
                     <Badge variant="info">{visit.scheduledDate}</Badge>
-                    <span className="text-xs text-neutral-400">{visit.salesRep}</span>
+                    <span className="font-mono text-[11px] text-neutral-400">{visit.salesRep}</span>
                   </div>
                 </li>
               ))}

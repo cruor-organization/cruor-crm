@@ -84,7 +84,7 @@ function NewOrderModal({ open, onClose }: { open: boolean; onClose: () => void }
           O wizard de criação de encomenda será implementado na Fase 3 do backend. Por agora, use
           este ecrã para confirmar que o modal funciona.
         </p>
-        <div className="rounded-md bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="rounded-control bg-amber-50 border border-amber-200 px-4 py-3">
           <p className="text-xs text-amber-700">
             <strong>Mock:</strong> nenhuma encomenda será criada.
           </p>
@@ -206,7 +206,7 @@ function OrdersPage() {
           Nenhuma encomenda com este estado.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-neutral-200 bg-white">
+        <div className="overflow-x-auto rounded-card border border-neutral-200 bg-white shadow-card">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-neutral-200 bg-neutral-50">
@@ -251,10 +251,12 @@ function OrdersPage() {
                       {STATUS_LABEL[order.status]}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-right font-medium text-neutral-900">
+                  <td className="px-4 py-3 text-right font-mono tabular-nums font-medium text-neutral-900">
                     {formatEur(order.totalEur)}
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">{formatDate(order.createdAt)}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-neutral-600">
+                    {formatDate(order.createdAt)}
+                  </td>
                   <td className="px-4 py-3 text-neutral-600">{order.salesRep}</td>
                 </tr>
               ))}

@@ -121,7 +121,7 @@ function PostPill({ post }: { post: SocialPost }) {
 
   return (
     <div
-      className={`flex items-center gap-0.5 truncate rounded px-1 py-0.5 text-[10px] font-medium ${colorClass}`}
+      className={`flex items-center gap-0.5 truncate rounded-full px-1.5 py-0.5 text-[10px] font-medium ${colorClass}`}
     >
       <PlatformIcon platform={post.platform} size={10} />
       <span className="truncate">{post.caption.slice(0, 20)}…</span>
@@ -136,8 +136,10 @@ function PostPill({ post }: { post: SocialPost }) {
 function DayPostsPanel({ day, posts }: { day: number | null; posts: SocialPost[] }) {
   if (day === null) return null;
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-4">
-      <p className="mb-3 text-sm font-semibold text-neutral-700">Posts — dia {day}</p>
+    <div className="rounded-card border border-neutral-200 bg-white p-4 shadow-card">
+      <p className="mb-3 text-sm font-semibold tracking-tight text-neutral-700">
+        Posts — dia {day}
+      </p>
       {posts.length === 0 ? (
         <p className="text-sm text-neutral-400">Sem posts neste dia.</p>
       ) : (
@@ -145,7 +147,7 @@ function DayPostsPanel({ day, posts }: { day: number | null; posts: SocialPost[]
           {posts.map((post) => (
             <div
               key={post.id}
-              className="flex items-start gap-3 rounded-lg border border-neutral-100 p-3"
+              className="flex items-start gap-3 rounded-control border border-neutral-100 p-3"
             >
               <PlatformIcon platform={post.platform} size={16} />
               <div className="flex-1 min-w-0">
@@ -240,23 +242,23 @@ function SocialPage() {
       />
 
       {/* Calendário */}
-      <div className="rounded-xl border border-neutral-200 bg-white p-4">
+      <div className="rounded-card border border-neutral-200 bg-white p-4 shadow-card">
         {/* Cabeçalho do mês */}
         <div className="mb-4 flex items-center justify-between">
           <button
             type="button"
             onClick={prevMonth}
-            className="rounded-lg p-1.5 hover:bg-neutral-100"
+            className="rounded-control p-1.5 transition-colors hover:bg-neutral-100"
           >
             <ChevronLeft className="h-4 w-4 text-neutral-600" />
           </button>
-          <p className="font-semibold text-neutral-900">
+          <p className="font-semibold tracking-tight text-neutral-900">
             {MONTHS_PT[viewMonth]} {viewYear}
           </p>
           <button
             type="button"
             onClick={nextMonth}
-            className="rounded-lg p-1.5 hover:bg-neutral-100"
+            className="rounded-control p-1.5 transition-colors hover:bg-neutral-100"
           >
             <ChevronRight className="h-4 w-4 text-neutral-600" />
           </button>
@@ -265,7 +267,10 @@ function SocialPage() {
         {/* Dias da semana */}
         <div className="mb-1 grid grid-cols-7 gap-1">
           {WEEK_DAYS.map((d) => (
-            <div key={d} className="py-1 text-center text-xs font-medium text-neutral-400">
+            <div
+              key={d}
+              className="py-1 text-center text-[11px] font-medium uppercase tracking-wider text-neutral-500"
+            >
               {d}
             </div>
           ))}
@@ -287,17 +292,17 @@ function SocialPage() {
                 key={key}
                 type="button"
                 onClick={() => setSelectedDay(day === selectedDay ? null : day)}
-                className={`flex h-[80px] flex-col rounded-lg border p-1.5 text-left transition-colors ${
+                className={`flex h-[80px] flex-col rounded-card border p-1.5 text-left transition-colors duration-150 ${
                   isSelected
                     ? 'border-cruor-400 bg-cruor-50'
                     : isToday
-                      ? 'border-cruor-200 bg-cruor-50/50'
-                      : 'border-transparent hover:border-neutral-200 hover:bg-neutral-50'
+                      ? 'border-cruor-200 bg-cruor-50/50 ring-2 ring-cruor-200 ring-offset-1'
+                      : 'border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50'
                 }`}
               >
                 <span
                   className={`text-xs font-medium ${
-                    isToday ? 'text-cruor-600' : 'text-neutral-600'
+                    isToday ? 'font-semibold text-cruor-600' : 'text-neutral-600'
                   }`}
                 >
                   {day}
@@ -333,7 +338,7 @@ function SocialPage() {
             {upcoming.map((post) => (
               <div
                 key={post.id}
-                className="flex items-start gap-3 rounded-xl border border-neutral-200 bg-white px-4 py-3"
+                className="flex items-start gap-3 rounded-card border border-neutral-200 bg-white px-4 py-3 shadow-card"
               >
                 <PlatformIcon platform={post.platform} size={16} />
                 <div className="flex-1 min-w-0">
@@ -370,7 +375,7 @@ function SocialPage() {
         <div className="space-y-4">
           <div>
             <label className="mb-1 block text-sm font-medium text-neutral-700">Plataforma</label>
-            <select className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500">
+            <select className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500">
               <option value="instagram">Instagram</option>
               <option value="facebook">Facebook</option>
             </select>
@@ -390,7 +395,7 @@ function SocialPage() {
             <input
               type="text"
               placeholder="Ex: Foto flat-lay flores secas"
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
+              className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <div>
@@ -399,7 +404,7 @@ function SocialPage() {
             </label>
             <input
               type="datetime-local"
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
+              className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <p className="text-xs text-neutral-400">Mock — nenhum post será publicado via n8n.</p>

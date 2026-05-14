@@ -27,15 +27,15 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   return (
     <div className={`flex ${isOut ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[75%] rounded-xl px-3 py-2 text-sm shadow-sm ${
+        className={`max-w-[75%] rounded-card px-3 py-2 text-sm ${
           isOut
             ? 'rounded-br-sm bg-cruor-50 border border-cruor-200 text-neutral-800'
-            : 'rounded-bl-sm bg-white border border-neutral-200 text-neutral-800'
+            : 'rounded-bl-sm border border-neutral-200 bg-white text-neutral-800'
         }`}
       >
         <p className="whitespace-pre-wrap break-words leading-relaxed">{message.body}</p>
         <p
-          className={`mt-1 text-right text-[10px] ${isOut ? 'text-cruor-600' : 'text-neutral-400'}`}
+          className={`mt-1 text-right font-mono text-[10px] ${isOut ? 'text-cruor-600' : 'text-neutral-400'}`}
         >
           {formatDay(message.sentAt)} {formatTime(message.sentAt)}
         </p>

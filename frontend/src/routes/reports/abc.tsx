@@ -75,7 +75,7 @@ function AbcPage() {
 
       {/* Alertas de descida de bucket */}
       {DESCENT_ALERTS.length > 0 && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+        <div className="rounded-control border border-amber-200 bg-amber-50 px-4 py-3">
           <p className="mb-1 text-sm font-semibold text-amber-800">Alertas de descida</p>
           <ul className="space-y-1">
             {DESCENT_ALERTS.map((alert, i) => (
@@ -101,11 +101,13 @@ function AbcPage() {
               key={stat.bucket}
               type="button"
               onClick={() => setBucketFilter(isActive ? 'ALL' : stat.bucket)}
-              className={`rounded-lg border p-4 text-left transition-all ${colors.card} ${isActive ? 'ring-2 ring-offset-1 ring-cruor-400' : 'hover:opacity-80'}`}
+              className={`rounded-card border p-4 text-left transition-all duration-150 ${colors.card} ${isActive ? 'ring-2 ring-offset-1 ring-cruor-400' : 'hover:opacity-80'}`}
             >
               <p className={`text-lg font-bold ${colors.text}`}>{BUCKET_LABELS[stat.bucket]}</p>
-              <p className="mt-1 text-2xl font-semibold text-neutral-900">{stat.count}</p>
-              <p className="text-xs text-neutral-600">
+              <p className="mt-1 font-mono tabular-nums text-2xl font-semibold text-neutral-900">
+                {stat.count}
+              </p>
+              <p className="font-mono tabular-nums text-xs text-neutral-600">
                 {formatEur(stat.revenue)} · {stat.revenuePct.toFixed(1)}% receita
               </p>
             </button>
@@ -179,13 +181,13 @@ function AbcPage() {
                       )}
                     </td>
                     <td className="px-4 py-2.5 text-neutral-500">{c.region}</td>
-                    <td className="px-4 py-2.5 text-right text-neutral-600">
+                    <td className="px-4 py-2.5 text-right font-mono tabular-nums text-neutral-600">
                       {formatEur(c.revenueEur)}
                     </td>
-                    <td className="px-4 py-2.5 text-right font-medium text-neutral-800">
+                    <td className="px-4 py-2.5 text-right font-mono tabular-nums font-medium text-neutral-800">
                       {formatEur(c.marginEur)}
                     </td>
-                    <td className="px-4 py-2.5 text-right text-neutral-600">
+                    <td className="px-4 py-2.5 text-right font-mono tabular-nums text-neutral-600">
                       {c.marginPct.toFixed(1)}%
                     </td>
                     <td className="px-4 py-2.5">

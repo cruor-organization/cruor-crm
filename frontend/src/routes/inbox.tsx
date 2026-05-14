@@ -87,7 +87,7 @@ function InboxPage() {
         ) : (
           <>
             {/* Cabeçalho da conversa */}
-            <div className="flex items-center gap-3 border-b border-neutral-200 bg-white px-5 py-3 shadow-sm">
+            <div className="flex items-center gap-3 border-b border-neutral-200 bg-white px-5 py-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-cruor-100 text-xs font-semibold text-cruor-700">
                 {selected.customerName
                   .split(' ')
@@ -137,7 +137,7 @@ function InboxPage() {
                       : 'Escrever email… (Ctrl+Enter para enviar)'
                   }
                   rows={2}
-                  className="flex-1 resize-none rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none placeholder:text-neutral-400 focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
+                  className="flex-1 resize-none rounded-control border border-neutral-200 px-3 py-2 text-sm outline-none placeholder:text-neutral-400 focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
                 />
                 <Button
                   icon={<Send className="h-4 w-4" />}

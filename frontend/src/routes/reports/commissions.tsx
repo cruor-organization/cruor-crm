@@ -76,17 +76,25 @@ function CommissionsPage() {
       {/* Summary stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
-          <p className="text-sm font-medium text-neutral-500">Total comissões</p>
-          <p className="mt-2 text-2xl font-semibold text-neutral-900">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">
+            Total comissões
+          </p>
+          <p className="mt-2 font-mono tabular-nums text-2xl font-semibold text-neutral-900">
             {formatEur(totalCommission)}
           </p>
         </Card>
         <Card>
-          <p className="text-sm font-medium text-neutral-500">Encomendas no período</p>
-          <p className="mt-2 text-2xl font-semibold text-neutral-900">{totalOrders}</p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">
+            Encomendas no período
+          </p>
+          <p className="mt-2 font-mono tabular-nums text-2xl font-semibold text-neutral-900">
+            {totalOrders}
+          </p>
         </Card>
         <Card>
-          <p className="text-sm font-medium text-neutral-500">Estado do mês</p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">
+            Estado do mês
+          </p>
           <p className="mt-2">
             {isFrozen ? (
               <Badge variant="neutral">Fechado</Badge>
@@ -109,7 +117,7 @@ function CommissionsPage() {
             sublabel: `(${r.pct}% s/ ${r.basis === 'MARGIN' ? 'margem' : 'receita'})`,
           }))}
           format={formatEur}
-          colorClass="bg-violet-500"
+          colorClass="bg-cruor-600"
         />
       </Card>
 
@@ -151,14 +159,18 @@ function CommissionsPage() {
                           {row.basis === 'MARGIN' ? 'Margem' : 'Receita'}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-right text-neutral-600">
+                      <td className="px-4 py-3 text-right font-mono tabular-nums text-neutral-600">
                         {formatEur(row.baseEur)}
                       </td>
-                      <td className="px-4 py-3 text-right text-neutral-600">{row.pct}%</td>
-                      <td className="px-4 py-3 text-right font-semibold text-neutral-900">
+                      <td className="px-4 py-3 text-right font-mono tabular-nums text-neutral-600">
+                        {row.pct}%
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono tabular-nums font-semibold text-neutral-900">
                         {formatEur(row.commissionEur)}
                       </td>
-                      <td className="px-4 py-3 text-right text-neutral-600">{row.ordersCount}</td>
+                      <td className="px-4 py-3 text-right font-mono tabular-nums text-neutral-600">
+                        {row.ordersCount}
+                      </td>
                       <td className="px-4 py-3">
                         {isFrozen ? (
                           <Badge variant="neutral">Fechado</Badge>
@@ -173,10 +185,12 @@ function CommissionsPage() {
                     <td className="px-4 py-3 text-neutral-700" colSpan={4}>
                       Total
                     </td>
-                    <td className="px-4 py-3 text-right text-neutral-900">
+                    <td className="px-4 py-3 text-right font-mono tabular-nums text-neutral-900">
                       {formatEur(totalCommission)}
                     </td>
-                    <td className="px-4 py-3 text-right text-neutral-700">{totalOrders}</td>
+                    <td className="px-4 py-3 text-right font-mono tabular-nums text-neutral-700">
+                      {totalOrders}
+                    </td>
                     <td />
                   </tr>
                 </>

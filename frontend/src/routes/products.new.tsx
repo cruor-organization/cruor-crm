@@ -30,7 +30,7 @@ function ProductNewPage() {
         <p className="text-sm text-neutral-500">Introduz os dados do novo produto.</p>
       </header>
 
-      <div className="rounded-lg border bg-white p-6 shadow-sm">
+      <div className="rounded-card border border-neutral-200 bg-white p-6 shadow-card">
         <ProductForm mode="create" onSuccess={handleSuccess} />
       </div>
     </section>

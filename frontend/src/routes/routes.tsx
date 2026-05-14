@@ -47,7 +47,7 @@ function NewRouteModal({ open, onClose }: { open: boolean; onClose: () => void }
           O assistente de criação de rotas (com otimização automática) será implementado na Fase 7
           (Operação em Campo).
         </p>
-        <div className="rounded-md bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="rounded-control border border-amber-200 bg-amber-50 px-4 py-3">
           <p className="text-xs text-amber-700">
             <strong>Mock:</strong> nenhuma rota será criada.
           </p>

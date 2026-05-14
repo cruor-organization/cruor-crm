@@ -68,13 +68,13 @@ function SuppliersPage() {
       {error && <div className="text-red-600">Erro: {error.message}</div>}
 
       {data?.items.length === 0 && (
-        <div className="rounded-md border border-dashed bg-white p-12 text-center text-neutral-500">
+        <div className="rounded-card border border-dashed bg-white p-12 text-center text-neutral-500">
           Sem fornecedores ainda. Cria o primeiro.
         </div>
       )}
 
       {data && data.items.length > 0 && (
-        <div className="overflow-hidden rounded-md border bg-white">
+        <div className="overflow-hidden rounded-card border border-neutral-200 bg-white shadow-card">
           <table className="w-full text-sm">
             <thead className="bg-neutral-50 text-left text-xs uppercase tracking-wide text-neutral-500">
               <tr>

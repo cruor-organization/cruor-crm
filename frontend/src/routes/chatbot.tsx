@@ -34,7 +34,7 @@ interface ToolCallCardProps {
 function ToolCallCard({ name, input, outputJson, status }: ToolCallCardProps) {
   const [expanded, setExpanded] = useState(false);
   return (
-    <div className="my-1 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs">
+    <div className="my-1 rounded-control border border-blue-200 bg-blue-50 px-3 py-2 text-xs">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
@@ -78,7 +78,7 @@ function DraftCard({
   onDiscard: () => void;
 }) {
   return (
-    <div className="my-2 rounded-lg border-2 border-amber-300 bg-amber-50 px-4 py-3">
+    <div className="my-2 rounded-control border-2 border-amber-300 bg-amber-50 px-4 py-3">
       <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
         DRAFT — requer confirmação
       </p>
@@ -145,7 +145,7 @@ function MessageBubble({
             className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
               isUser
                 ? 'rounded-tr-sm bg-cruor-600 text-white'
-                : 'rounded-tl-sm bg-white text-neutral-800 shadow-sm ring-1 ring-neutral-100'
+                : 'rounded-tl-sm border border-neutral-200 bg-white text-neutral-800'
             }`}
           >
             {message.content.split('\n').map((line, i) => {
@@ -283,7 +283,7 @@ function ChatbotPage() {
       {/* Área de chat */}
       <div className="flex flex-1 flex-col bg-neutral-50">
         {/* Cabeçalho */}
-        <div className="flex items-center gap-3 border-b border-neutral-200 bg-white px-5 py-3 shadow-sm">
+        <div className="flex items-center gap-3 border-b border-neutral-200 bg-white px-5 py-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cruor-100">
             <Bot className="h-4 w-4 text-cruor-700" />
           </div>
@@ -327,7 +327,7 @@ function ChatbotPage() {
               onKeyDown={handleKeyDown}
               placeholder="Faça uma pergunta… (Ctrl+Enter para enviar)"
               rows={2}
-              className="flex-1 resize-none rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none placeholder:text-neutral-400 focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
+              className="flex-1 resize-none rounded-control border border-neutral-200 px-3 py-2 text-sm outline-none placeholder:text-neutral-400 focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
             <Button
               icon={<Send className="h-4 w-4" />}

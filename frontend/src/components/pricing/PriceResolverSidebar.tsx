@@ -164,7 +164,7 @@ export function PriceResolverSidebar() {
         )}
 
         {errorMsg && (
-          <div className="rounded-md bg-red-50 border border-red-200 p-4">
+          <div className="rounded-control border border-red-200 bg-red-50 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-red-700 mb-1">
               {errorCode}
             </p>
@@ -180,21 +180,21 @@ export function PriceResolverSidebar() {
             </div>
 
             <dl className="grid grid-cols-2 gap-4">
-              <div className="rounded-lg bg-neutral-50 p-3">
+              <div className="rounded-control bg-neutral-50 p-3">
                 <dt className="text-xs text-neutral-500">Preço unitário</dt>
-                <dd className="mt-1 text-xl font-semibold text-neutral-900">
+                <dd className="mt-1 font-mono tabular-nums text-xl font-semibold text-neutral-900">
                   {fmtPrice(result.unitPriceEur)} €
                 </dd>
               </div>
-              <div className="rounded-lg bg-neutral-50 p-3">
+              <div className="rounded-control bg-neutral-50 p-3">
                 <dt className="text-xs text-neutral-500">Desconto aplicado</dt>
-                <dd className="mt-1 text-xl font-semibold text-neutral-900">
+                <dd className="mt-1 font-mono tabular-nums text-xl font-semibold text-neutral-900">
                   {(result.appliedDiscountPct * 100).toFixed(0)} %
                 </dd>
               </div>
-              <div className="col-span-2 rounded-lg bg-cruor-50 p-3">
+              <div className="col-span-2 rounded-control bg-cruor-50 p-3">
                 <dt className="text-xs text-cruor-700">Total da linha</dt>
-                <dd className="mt-1 text-2xl font-bold text-cruor-800">
+                <dd className="mt-1 font-mono tabular-nums text-2xl font-bold text-cruor-800">
                   {fmtPrice(result.lineTotalEur)} €
                 </dd>
               </div>

@@ -47,22 +47,22 @@ export function OrderStatusFlow({ current }: OrderStatusFlowProps) {
 
           return (
             <div key={step} className="flex items-center">
-              {/* Conectador */}
+              {/* Conectador — fino 1px */}
               {i > 0 && (
                 <div
-                  className={`h-0.5 w-6 shrink-0 ${
-                    isPast || (isCurrent && i > 0) ? 'bg-green-500' : 'bg-neutral-200'
+                  className={`h-px w-6 shrink-0 ${
+                    isPast || (isCurrent && i > 0) ? 'bg-green-600' : 'bg-neutral-200'
                   }`}
                 />
               )}
               {/* Nó */}
               <div className="flex flex-col items-center gap-1">
                 <div
-                  className={`flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-semibold transition-colors ${
+                  className={`flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-semibold transition-colors duration-150 ${
                     isCurrent
-                      ? 'border-cruor-600 bg-cruor-600 text-white'
+                      ? 'border-cruor-200 bg-cruor-600 text-white ring-2 ring-cruor-200'
                       : isPast
-                        ? 'border-green-500 bg-green-500 text-white'
+                        ? 'border-green-600 bg-green-600 text-white'
                         : 'border-neutral-300 bg-white text-neutral-400'
                   }`}
                 >
@@ -89,10 +89,10 @@ export function OrderStatusFlow({ current }: OrderStatusFlowProps) {
       {isTerminal && (
         <div className="flex items-center gap-2">
           <div
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ${
+            className={`flex items-center gap-1.5 rounded-control px-3 py-1.5 text-xs font-medium ${
               current === 'CANCELLED'
-                ? 'bg-red-50 text-red-700 border border-red-200'
-                : 'bg-amber-50 text-amber-700 border border-amber-200'
+                ? 'border border-red-200 bg-red-50 text-red-700'
+                : 'border border-amber-200 bg-amber-50 text-amber-700'
             }`}
           >
             <XCircle className="h-3.5 w-3.5" />

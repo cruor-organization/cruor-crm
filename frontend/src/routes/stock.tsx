@@ -110,7 +110,7 @@ function LocationsTab() {
       {isLoading && <div className="text-neutral-500">A carregar…</div>}
 
       {data && data.items.length > 0 && (
-        <div className="overflow-hidden rounded-md border bg-white">
+        <div className="overflow-hidden rounded-card border border-neutral-200 bg-white shadow-card">
           <table className="w-full text-sm">
             <thead className="bg-neutral-50 text-left text-xs uppercase tracking-wide text-neutral-500">
               <tr>
@@ -145,7 +145,7 @@ function LocationsTab() {
       )}
 
       {data?.items.length === 0 && (
-        <div className="rounded-md border border-dashed p-12 text-center text-neutral-500">
+        <div className="rounded-card border border-dashed p-12 text-center text-neutral-500">
           Sem localizações. Cria a primeira.
         </div>
       )}
@@ -184,7 +184,7 @@ function LevelsTab() {
       {isLoading && <div className="text-neutral-500">A carregar…</div>}
 
       {data && data.items.length > 0 && (
-        <div className="overflow-hidden rounded-md border bg-white">
+        <div className="overflow-hidden rounded-card border border-neutral-200 bg-white shadow-card">
           <table className="w-full text-sm">
             <thead className="bg-neutral-50 text-left text-xs uppercase tracking-wide text-neutral-500">
               <tr>
@@ -218,7 +218,7 @@ function LevelsTab() {
       )}
 
       {data?.items.length === 0 && (
-        <div className="rounded-md border border-dashed p-12 text-center text-neutral-500">
+        <div className="rounded-card border border-dashed p-12 text-center text-neutral-500">
           Sem níveis de stock registados.
         </div>
       )}
@@ -248,7 +248,7 @@ function MovementsTab() {
       {isLoading && <div className="text-neutral-500">A carregar…</div>}
 
       {data && data.items.length > 0 && (
-        <div className="overflow-hidden rounded-md border bg-white">
+        <div className="overflow-hidden rounded-card border border-neutral-200 bg-white shadow-card">
           <table className="w-full text-sm">
             <thead className="bg-neutral-50 text-left text-xs uppercase tracking-wide text-neutral-500">
               <tr>
@@ -283,7 +283,7 @@ function MovementsTab() {
       )}
 
       {data?.items.length === 0 && (
-        <div className="rounded-md border border-dashed p-12 text-center text-neutral-500">
+        <div className="rounded-card border border-dashed p-12 text-center text-neutral-500">
           Sem movimentos registados.
         </div>
       )}
@@ -340,14 +340,14 @@ function TransfersTab() {
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
       {/* Formulário de transferência */}
-      <div className="rounded-lg border bg-white p-6">
+      <div className="rounded-card border border-neutral-200 bg-white p-6 shadow-card">
         <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-neutral-500">
           Nova transferência
         </h3>
 
         <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4">
           {generalError && (
-            <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="rounded-control bg-red-50 px-4 py-3 text-sm text-red-700">
               {generalError}
             </div>
           )}
@@ -406,7 +406,10 @@ function TransfersTab() {
 
         <ol className="space-y-3">
           {movementsData?.items.map((m) => (
-            <li key={m.id} className="rounded-md border bg-white p-3 text-sm">
+            <li
+              key={m.id}
+              className="rounded-control border border-neutral-200 bg-white p-3 text-sm shadow-card"
+            >
               <div className="flex items-center justify-between">
                 <span className="font-mono text-xs text-neutral-600">
                   {m.variantId.slice(0, 8)}…

@@ -142,13 +142,13 @@ function MarginsPage() {
                         <td className="max-w-[160px] truncate px-4 py-2 text-neutral-800">
                           {row.name.split(' — ')[0]}
                         </td>
-                        <td className="px-4 py-2 text-right text-neutral-600">
+                        <td className="px-4 py-2 text-right font-mono tabular-nums text-neutral-600">
                           {formatEur(row.revenueEur)}
                         </td>
-                        <td className="px-4 py-2 text-right font-medium text-neutral-800">
+                        <td className="px-4 py-2 text-right font-mono tabular-nums font-medium text-neutral-800">
                           {formatEur(row.marginEur)}
                         </td>
-                        <td className="px-4 py-2 text-right text-neutral-600">
+                        <td className="px-4 py-2 text-right font-mono tabular-nums text-neutral-600">
                           {row.marginPct.toFixed(1)}%
                         </td>
                         <td className="px-4 py-2">
@@ -196,10 +196,10 @@ function MarginsPage() {
                           {row.name.split(' (')[0]}
                         </td>
                         <td className="px-4 py-2 text-neutral-500">{row.category}</td>
-                        <td className="px-4 py-2 text-right font-medium text-neutral-800">
+                        <td className="px-4 py-2 text-right font-mono tabular-nums font-medium text-neutral-800">
                           {formatEur(row.marginEur)}
                         </td>
-                        <td className="px-4 py-2 text-right text-green-600 font-medium">
+                        <td className="px-4 py-2 text-right font-mono tabular-nums font-medium text-green-600">
                           {row.marginPct.toFixed(1)}%
                         </td>
                       </tr>

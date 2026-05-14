@@ -79,7 +79,7 @@ export function ThreadList({
             placeholder="Pesquisar florista…"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full rounded-md border border-neutral-200 py-1.5 pl-8 pr-3 text-sm outline-none placeholder:text-neutral-400 focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
+            className="w-full rounded-control border border-neutral-200 py-1.5 pl-8 pr-3 text-sm outline-none placeholder:text-neutral-400 focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
           />
         </div>
         {/* Filtros */}
@@ -115,8 +115,8 @@ export function ThreadList({
                 key={thread.id}
                 type="button"
                 onClick={() => onSelect(thread.id)}
-                className={`flex w-full items-start gap-3 px-3 py-3 text-left transition-colors hover:bg-neutral-50 ${
-                  selected ? 'bg-cruor-50 border-r-2 border-cruor-500' : ''
+                className={`flex w-full items-start gap-3 px-3 py-3 text-left transition-colors ${
+                  selected ? 'bg-neutral-100' : 'hover:bg-neutral-50'
                 }`}
               >
                 {/* Avatar */}

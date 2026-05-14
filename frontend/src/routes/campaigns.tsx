@@ -67,7 +67,7 @@ function pct(v: number | undefined): string {
 
 function CampaignCard({ campaign }: { campaign: Campaign }) {
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-5 transition-shadow hover:shadow-md">
+    <div className="rounded-card border border-neutral-200 bg-white p-5 shadow-card transition-shadow hover:shadow-card-hover">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2">
           <ChannelIcon channel={campaign.channel} />
@@ -187,12 +187,12 @@ function CampaignsPage() {
             <input
               type="text"
               placeholder="Ex: Promoção Verão 2026"
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
+              className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-neutral-700">Canal</label>
-            <select className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500">
+            <select className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500">
               <option value="email">Email</option>
               <option value="whatsapp">WhatsApp</option>
               <option value="social">Redes sociais</option>
@@ -203,7 +203,7 @@ function CampaignsPage() {
             <input
               type="text"
               placeholder="Ex: Clientes activos Lisboa"
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
+              className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <div>
@@ -212,7 +212,7 @@ function CampaignsPage() {
             </label>
             <input
               type="datetime-local"
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
+              className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <p className="text-xs text-neutral-400">

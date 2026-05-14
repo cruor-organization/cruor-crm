@@ -80,7 +80,7 @@ function ProductDetailPage() {
         <h1 className="mt-1 text-2xl font-semibold">{product.name}</h1>
       </header>
 
-      <div className="rounded-lg border bg-white p-6 shadow-sm">
+      <div className="rounded-card border border-neutral-200 bg-white p-6 shadow-card">
         <ProductForm mode="edit" product={product} />
       </div>
     </section>

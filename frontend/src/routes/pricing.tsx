@@ -305,7 +305,7 @@ function PricingPage() {
 
       {activeTab === 'resolver' && (
         <div className="space-y-4">
-          <div className="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3">
+          <div className="rounded-control border border-blue-200 bg-blue-50 px-4 py-3">
             <p className="text-sm text-blue-800">
               <strong>Resolver preço</strong> — calcula o preço aplicável para uma combinação de
               variante, quantidade e florista, respeitando a hierarquia: override manual → preço

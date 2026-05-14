@@ -104,7 +104,7 @@ function CustomerDetailPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Formulário de edição */}
         <div className="lg:col-span-2">
-          <div className="rounded-lg border bg-white p-6 shadow-sm">
+          <div className="rounded-card border border-neutral-200 bg-white p-6 shadow-card">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-neutral-500">
               Dados
             </h2>
@@ -114,7 +114,7 @@ function CustomerDetailPage() {
 
         {/* Timeline de atividades */}
         <div>
-          <div className="rounded-lg border bg-white p-4 shadow-sm">
+          <div className="rounded-card border border-neutral-200 bg-white p-4 shadow-card">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-neutral-500">
               Atividade recente
             </h2>

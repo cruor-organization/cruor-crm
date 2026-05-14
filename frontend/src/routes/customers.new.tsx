@@ -30,7 +30,7 @@ function CustomerNewPage() {
         <p className="text-sm text-neutral-500">Preenche os dados do novo florista.</p>
       </header>
 
-      <div className="rounded-lg border bg-white p-6 shadow-sm">
+      <div className="rounded-card border border-neutral-200 bg-white p-6 shadow-card">
         <CustomerForm mode="create" onSuccess={handleSuccess} />
       </div>
     </section>

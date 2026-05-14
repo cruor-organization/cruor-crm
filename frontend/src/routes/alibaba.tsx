@@ -97,14 +97,14 @@ function ImportOrderModal({ open, onClose }: { open: boolean; onClose: () => voi
           ))}
         </div>
 
-        <div className="rounded-md bg-blue-50 border border-blue-200 px-4 py-3">
+        <div className="rounded-control border border-blue-200 bg-blue-50 px-4 py-3">
           <p className="text-sm text-blue-800">
             <strong>Passo 1: Fornecedor</strong> — selecciona o fornecedor Alibaba, incoterm e data
             de entrega estimada.
           </p>
         </div>
 
-        <div className="rounded-md bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="rounded-control border border-amber-200 bg-amber-50 px-4 py-3">
           <p className="text-xs text-amber-700">
             <strong>Mock:</strong> nenhuma encomenda será criada. Wizard completo disponível na Fase
             3.

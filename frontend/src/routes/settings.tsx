@@ -122,7 +122,7 @@ function SettingsPage() {
 
             <OrgField label="Nome da empresa">
               <input
-                className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500"
+                className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500"
                 value={orgForm.name}
                 onChange={(e) => setOrgForm({ ...orgForm, name: e.target.value })}
               />
@@ -130,7 +130,7 @@ function SettingsPage() {
 
             <OrgField label="NIF">
               <input
-                className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500"
+                className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500"
                 value={orgForm.nif}
                 onChange={(e) => setOrgForm({ ...orgForm, nif: e.target.value })}
               />
@@ -138,7 +138,7 @@ function SettingsPage() {
 
             <OrgField label="Morada" className="col-span-2">
               <input
-                className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500"
+                className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500"
                 value={orgForm.address}
                 onChange={(e) => setOrgForm({ ...orgForm, address: e.target.value })}
               />
@@ -146,7 +146,7 @@ function SettingsPage() {
 
             <OrgField label="Telefone">
               <input
-                className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500"
+                className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500"
                 value={orgForm.phone}
                 onChange={(e) => setOrgForm({ ...orgForm, phone: e.target.value })}
               />
@@ -155,7 +155,7 @@ function SettingsPage() {
             <OrgField label="Email">
               <input
                 type="email"
-                className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500"
+                className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500"
                 value={orgForm.email}
                 onChange={(e) => setOrgForm({ ...orgForm, email: e.target.value })}
               />
@@ -163,7 +163,7 @@ function SettingsPage() {
 
             <OrgField label="Locale">
               <input
-                className="w-full rounded-md border border-neutral-300 bg-neutral-50 px-3 py-2 text-sm text-neutral-500"
+                className="w-full rounded-control border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-500"
                 value={orgForm.locale}
                 disabled
               />
@@ -171,7 +171,7 @@ function SettingsPage() {
 
             <OrgField label="Moeda">
               <input
-                className="w-full rounded-md border border-neutral-300 bg-neutral-50 px-3 py-2 text-sm text-neutral-500"
+                className="w-full rounded-control border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-500"
                 value={orgForm.currency}
                 disabled
               />
@@ -180,7 +180,7 @@ function SettingsPage() {
             <OrgField label="IVA padrão (%)">
               <input
                 type="number"
-                className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500"
+                className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500"
                 value={orgForm.vatDefault}
                 onChange={(e) => setOrgForm({ ...orgForm, vatDefault: Number(e.target.value) })}
               />
@@ -342,7 +342,7 @@ function SettingsPage() {
             <input
               type="email"
               required
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500"
+              className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500"
               placeholder="nome@empresa.pt"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
@@ -351,7 +351,7 @@ function SettingsPage() {
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-neutral-700">Papel</label>
             <select
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500"
+              className="w-full rounded-control border border-neutral-200 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50 disabled:text-neutral-500"
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value as UserRole)}
             >

@@ -72,7 +72,7 @@ function NewVisitModal({ open, onClose }: { open: boolean; onClose: () => void }
           O formulário de criação de visitas será implementado na Fase 7 (Operação em Campo). Por
           agora, este ecrã confirma que o modal funciona.
         </p>
-        <div className="rounded-md bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="rounded-control border border-amber-200 bg-amber-50 px-4 py-3">
           <p className="text-xs text-amber-700">
             <strong>Mock:</strong> nenhuma visita será criada.
           </p>
@@ -226,7 +226,7 @@ function VisitsPage() {
           Histórico ({historical.length})
         </h2>
         {!isLoading && historical.length > 0 && (
-          <div className="overflow-x-auto rounded-lg border border-neutral-200 bg-white">
+          <div className="overflow-x-auto rounded-card border border-neutral-200 bg-white shadow-card">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-neutral-200 bg-neutral-50">

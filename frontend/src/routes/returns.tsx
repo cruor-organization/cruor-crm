@@ -91,7 +91,7 @@ function NewReturnModal({ open, onClose }: { open: boolean; onClose: () => void 
         <p className="text-sm text-neutral-500">
           O formulário de criação de devolução será implementado na Fase 3.
         </p>
-        <div className="rounded-md bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="rounded-control border border-amber-200 bg-amber-50 px-4 py-3">
           <p className="text-xs text-amber-700">
             <strong>Mock:</strong> nenhuma devolução será criada.
           </p>

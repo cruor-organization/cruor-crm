@@ -90,7 +90,7 @@ function OrderDetailPage() {
         <div className="flex items-start gap-3">
           <Link
             to="/orders"
-            className="mt-0.5 rounded-md p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+            className="mt-0.5 rounded-control p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
