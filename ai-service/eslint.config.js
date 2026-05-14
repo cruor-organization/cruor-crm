@@ -6,7 +6,14 @@ import tseslint from 'typescript-eslint';
 
 export default [
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/eslint.config.js'],
+    // `src/**/*.js(.map)` are tsc emit artifacts next to the TS sources; never lint them.
+    ignores: [
+      '**/dist/**',
+      '**/node_modules/**',
+      '**/eslint.config.js',
+      'src/**/*.js',
+      'src/**/*.js.map',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
