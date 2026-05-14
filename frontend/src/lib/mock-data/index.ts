@@ -12,3 +12,6 @@ export * from './scraping';
 export * from './campaigns';
 export * from './email';
 export * from './social';
+export * from './reports';
+export * from './settings';
+export * from './catalogs';
