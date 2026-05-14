@@ -73,7 +73,7 @@ function OrderDetailPage() {
     return (
       <div className="py-12 text-center">
         <p className="text-neutral-500">Encomenda não encontrada.</p>
-        <Link to="/orders" className="mt-4 inline-block text-sm text-emerald-600 hover:underline">
+        <Link to="/orders" className="mt-4 inline-block text-sm text-cruor-600 hover:underline">
           Voltar à lista
         </Link>
       </div>
@@ -246,7 +246,7 @@ function OrderDetailPage() {
             <ol className="space-y-3">
               {[...order.statusHistory].reverse().map((entry, i) => (
                 <li key={i} className="flex gap-2.5">
-                  <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                  <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-neutral-400" />
                   <div>
                     <p className="text-xs font-medium text-neutral-800">
                       {entry.fromStatus

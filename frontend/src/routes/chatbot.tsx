@@ -43,7 +43,7 @@ function ToolCallCard({ name, input, outputJson, status }: ToolCallCardProps) {
         <Zap className="h-3 w-3 shrink-0" />
         <span className="font-semibold">{name}</span>
         {status === 'running' && <span className="ml-auto text-blue-400">a executar…</span>}
-        {status === 'done' && <span className="ml-auto text-emerald-600">concluído</span>}
+        {status === 'done' && <span className="ml-auto text-green-600">concluído</span>}
         <ChevronRight
           className={`ml-1 h-3 w-3 shrink-0 transition-transform ${expanded ? 'rotate-90' : ''}`}
         />
@@ -114,7 +114,7 @@ function MessageBubble({
       {/* Avatar */}
       <div
         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white ${
-          isUser ? 'bg-emerald-500' : 'bg-neutral-400'
+          isUser ? 'bg-cruor-500' : 'bg-neutral-400'
         }`}
       >
         {isUser ? <User className="h-3.5 w-3.5" /> : <Bot className="h-3.5 w-3.5" />}
@@ -144,7 +144,7 @@ function MessageBubble({
           <div
             className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
               isUser
-                ? 'rounded-tr-sm bg-emerald-600 text-white'
+                ? 'rounded-tr-sm bg-cruor-600 text-white'
                 : 'rounded-tl-sm bg-white text-neutral-800 shadow-sm ring-1 ring-neutral-100'
             }`}
           >
@@ -173,7 +173,7 @@ function MessageBubble({
             />
           )}
         {message.isDraft && message.draftConfirmed === true && (
-          <p className="text-xs text-emerald-600">✓ Orçamento confirmado (mock)</p>
+          <p className="text-xs text-green-600">✓ Orçamento confirmado (mock)</p>
         )}
         {message.isDraft && message.draftConfirmed === false && (
           <p className="text-xs text-neutral-400">Orçamento descartado</p>
@@ -251,12 +251,12 @@ function ChatbotPage() {
               type="button"
               onClick={() => setSelectedId(conv.id)}
               className={`w-full border-b border-neutral-100 px-4 py-3 text-left transition-colors hover:bg-neutral-50 ${
-                conv.id === selectedId ? 'bg-emerald-50' : ''
+                conv.id === selectedId ? 'bg-cruor-50' : ''
               }`}
             >
               <p
                 className={`truncate text-sm font-medium ${
-                  conv.id === selectedId ? 'text-emerald-700' : 'text-neutral-800'
+                  conv.id === selectedId ? 'text-cruor-700' : 'text-neutral-800'
                 }`}
               >
                 {conv.title}
@@ -284,8 +284,8 @@ function ChatbotPage() {
       <div className="flex flex-1 flex-col bg-neutral-50">
         {/* Cabeçalho */}
         <div className="flex items-center gap-3 border-b border-neutral-200 bg-white px-5 py-3 shadow-sm">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100">
-            <Bot className="h-4 w-4 text-emerald-700" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cruor-100">
+            <Bot className="h-4 w-4 text-cruor-700" />
           </div>
           <div>
             <p className="font-semibold text-neutral-900">Assistente RAG</p>
@@ -293,7 +293,7 @@ function ChatbotPage() {
               {selected?.title ?? 'Selecione uma conversa'}
             </p>
           </div>
-          <span className="ml-auto rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
+          <span className="ml-auto rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600">
             Apenas leitura por omissão · DRAFT requer confirmação
           </span>
         </div>
@@ -327,7 +327,7 @@ function ChatbotPage() {
               onKeyDown={handleKeyDown}
               placeholder="Faça uma pergunta… (Ctrl+Enter para enviar)"
               rows={2}
-              className="flex-1 resize-none rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none placeholder:text-neutral-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="flex-1 resize-none rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none placeholder:text-neutral-400 focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
             <Button
               icon={<Send className="h-4 w-4" />}

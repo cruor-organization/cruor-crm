@@ -183,7 +183,7 @@ function OrdersPage() {
               onClick={() => setStatusFilter(tab.key)}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors border ${
                 active
-                  ? 'bg-emerald-600 border-emerald-600 text-white'
+                  ? 'bg-cruor-600 border-cruor-600 text-white'
                   : 'bg-white border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50'
               }`}
             >
@@ -237,7 +237,7 @@ function OrdersPage() {
                     <Link
                       to="/orders/$id"
                       params={{ id: order.id }}
-                      className="font-mono text-xs font-medium text-emerald-700 hover:underline"
+                      className="font-mono text-xs font-medium text-cruor-700 hover:underline"
                     >
                       {order.id}
                     </Link>

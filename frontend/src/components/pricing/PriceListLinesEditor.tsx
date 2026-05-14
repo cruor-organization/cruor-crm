@@ -298,7 +298,7 @@ function AddLineRow({
   }
 
   return (
-    <tr className="bg-emerald-50">
+    <tr className="bg-cruor-50">
       <td colSpan={4} className="px-3 py-2">
         <div className="flex items-end gap-2">
           <div className="flex-1">

@@ -18,7 +18,7 @@ interface BarChartProps {
 export function BarChart({
   data,
   format = (n) => String(n),
-  colorClass = 'bg-emerald-500',
+  colorClass = 'bg-cruor-500',
   maxItems = 10,
 }: BarChartProps) {
   const items = data.slice(0, maxItems);

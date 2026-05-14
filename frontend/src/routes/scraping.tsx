@@ -249,7 +249,7 @@ function ScrapingPage() {
             <input
               type="text"
               placeholder="Ex: FloresOnline.pt"
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <div>
@@ -257,19 +257,19 @@ function ScrapingPage() {
             <input
               type="url"
               placeholder="https://…"
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-neutral-700">Tipo</label>
-            <select className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+            <select className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500">
               <option value="competitor">Concorrente</option>
               <option value="lead_source">Fonte de leads</option>
             </select>
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-neutral-700">Cadência</label>
-            <select className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+            <select className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500">
               <option>Diário</option>
               <option>Semanal</option>
               <option>Mensal</option>

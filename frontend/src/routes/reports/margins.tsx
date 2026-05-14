@@ -105,7 +105,7 @@ function MarginsPage() {
               sublabel: `${c.marginPct.toFixed(1)}%`,
             }))}
             format={formatEur}
-            colorClass="bg-emerald-500"
+            colorClass="bg-cruor-500"
           />
         )}
       </Card>
@@ -199,7 +199,7 @@ function MarginsPage() {
                         <td className="px-4 py-2 text-right font-medium text-neutral-800">
                           {formatEur(row.marginEur)}
                         </td>
-                        <td className="px-4 py-2 text-right text-emerald-600 font-medium">
+                        <td className="px-4 py-2 text-right text-green-600 font-medium">
                           {row.marginPct.toFixed(1)}%
                         </td>
                       </tr>

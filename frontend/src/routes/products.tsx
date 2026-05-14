@@ -100,7 +100,7 @@ function ProductsPage() {
                     <Link
                       to="/products/$id"
                       params={{ id: p.id }}
-                      className="hover:text-emerald-700 hover:underline"
+                      className="hover:text-cruor-700 hover:underline"
                     >
                       {p.name}
                     </Link>

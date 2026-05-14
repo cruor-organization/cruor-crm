@@ -182,7 +182,7 @@ function RouteCard({ route }: { route: MockRoute }) {
                               className={
                                 stop.actualMinutes > stop.etaMinutes
                                   ? 'text-amber-600'
-                                  : 'text-emerald-600'
+                                  : 'text-green-600'
                               }
                             >
                               {stop.actualMinutes}m

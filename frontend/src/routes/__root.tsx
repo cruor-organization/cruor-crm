@@ -158,7 +158,7 @@ function AppShell() {
         <div className="flex h-14 items-center justify-between border-b border-neutral-200 px-4">
           <Link to="/" className="flex items-center gap-2" onClick={() => setDrawerOpen(false)}>
             <span className="text-sm font-bold tracking-tight text-neutral-900">CRM Florista</span>
-            <span className="rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+            <span className="rounded bg-cruor-600 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
               B2B
             </span>
           </Link>
@@ -259,7 +259,7 @@ function SidebarItem({ item, onClick }: SidebarItemProps) {
         to={item.to}
         onClick={onClick}
         activeProps={{
-          className: 'bg-emerald-600 text-white hover:bg-emerald-700',
+          className: 'bg-cruor-600 text-white hover:bg-cruor-700',
         }}
         inactiveProps={{
           className: 'text-neutral-700 hover:bg-neutral-100',

@@ -37,8 +37,8 @@ const KANBAN_COLUMNS = ['NEW', 'CONTACTED', 'QUALIFIED', 'NEGOTIATING', 'WON', '
 
 const COLUMN_COLORS: Record<string, string> = {
   NEW: 'bg-blue-50 border-blue-200',
-  CONTACTED: 'bg-indigo-50 border-indigo-200',
-  QUALIFIED: 'bg-purple-50 border-purple-200',
+  CONTACTED: 'bg-blue-50 border-blue-200',
+  QUALIFIED: 'bg-amber-50 border-amber-200',
   NEGOTIATING: 'bg-amber-50 border-amber-200',
   WON: 'bg-green-50 border-green-200',
   LOST: 'bg-neutral-100 border-neutral-300',
@@ -190,7 +190,7 @@ function LeadsPage() {
                             {l.status !== 'WON' && l.status !== 'LOST' && (
                               <button
                                 type="button"
-                                className="w-full px-4 py-2 text-left text-xs text-emerald-600 hover:bg-neutral-50"
+                                className="w-full px-4 py-2 text-left text-xs text-cruor-600 hover:bg-neutral-50"
                                 onClick={() => void handleConvert(l)}
                               >
                                 Converter em florista

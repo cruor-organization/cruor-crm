@@ -15,7 +15,7 @@ interface StatProps {
 export function Stat({ label, value, delta, icon }: StatProps) {
   const deltaColor =
     delta?.direction === 'up'
-      ? 'text-emerald-600'
+      ? 'text-green-600'
       : delta?.direction === 'down'
         ? 'text-red-500'
         : 'text-neutral-500';

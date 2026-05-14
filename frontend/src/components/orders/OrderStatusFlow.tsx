@@ -51,7 +51,7 @@ export function OrderStatusFlow({ current }: OrderStatusFlowProps) {
               {i > 0 && (
                 <div
                   className={`h-0.5 w-6 shrink-0 ${
-                    isPast || (isCurrent && i > 0) ? 'bg-emerald-500' : 'bg-neutral-200'
+                    isPast || (isCurrent && i > 0) ? 'bg-green-500' : 'bg-neutral-200'
                   }`}
                 />
               )}
@@ -60,9 +60,9 @@ export function OrderStatusFlow({ current }: OrderStatusFlowProps) {
                 <div
                   className={`flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-semibold transition-colors ${
                     isCurrent
-                      ? 'border-emerald-600 bg-emerald-600 text-white'
+                      ? 'border-cruor-600 bg-cruor-600 text-white'
                       : isPast
-                        ? 'border-emerald-500 bg-emerald-500 text-white'
+                        ? 'border-green-500 bg-green-500 text-white'
                         : 'border-neutral-300 bg-white text-neutral-400'
                   }`}
                 >
@@ -71,9 +71,9 @@ export function OrderStatusFlow({ current }: OrderStatusFlowProps) {
                 <span
                   className={`max-w-[72px] text-center text-[10px] leading-tight ${
                     isCurrent
-                      ? 'font-semibold text-emerald-700'
+                      ? 'font-semibold text-cruor-700'
                       : isPast
-                        ? 'text-emerald-600'
+                        ? 'text-green-600'
                         : 'text-neutral-400'
                   }`}
                 >

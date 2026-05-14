@@ -46,8 +46,8 @@ const STATUS_LABEL: Record<CampaignStatus, string> = {
 
 function ChannelIcon({ channel }: { channel: CampaignChannel }) {
   if (channel === 'email') return <Mail className="h-4 w-4 text-blue-500" />;
-  if (channel === 'whatsapp') return <MessageCircle className="h-4 w-4 text-emerald-500" />;
-  return <Monitor className="h-4 w-4 text-purple-500" />;
+  if (channel === 'whatsapp') return <MessageCircle className="h-4 w-4 text-cruor-500" />;
+  return <Monitor className="h-4 w-4 text-blue-500" />;
 }
 
 const CHANNEL_LABEL: Record<CampaignChannel, string> = {
@@ -163,7 +163,7 @@ function CampaignsPage() {
             onClick={() => setFilterStatus(tab.key)}
             className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
               filterStatus === tab.key
-                ? 'bg-emerald-600 text-white'
+                ? 'bg-cruor-600 text-white'
                 : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
             }`}
           >
@@ -187,12 +187,12 @@ function CampaignsPage() {
             <input
               type="text"
               placeholder="Ex: Promoção Verão 2026"
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-neutral-700">Canal</label>
-            <select className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+            <select className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500">
               <option value="email">Email</option>
               <option value="whatsapp">WhatsApp</option>
               <option value="social">Redes sociais</option>
@@ -203,7 +203,7 @@ function CampaignsPage() {
             <input
               type="text"
               placeholder="Ex: Clientes activos Lisboa"
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <div>
@@ -212,7 +212,7 @@ function CampaignsPage() {
             </label>
             <input
               type="datetime-local"
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <p className="text-xs text-neutral-400">

@@ -117,7 +117,7 @@ function SuppliersPage() {
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        className="text-xs text-emerald-600 hover:underline"
+                        className="text-xs text-cruor-600 hover:underline"
                         onClick={() => setEditTarget(s)}
                       >
                         Editar

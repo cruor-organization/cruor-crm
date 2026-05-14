@@ -99,7 +99,7 @@ export function PriceResolverSidebar() {
       {/* Formulário */}
       <Card className="flex-1 space-y-4">
         <div className="flex items-center gap-2">
-          <Calculator className="h-5 w-5 text-emerald-600" />
+          <Calculator className="h-5 w-5 text-cruor-600" />
           <h3 className="text-sm font-semibold text-neutral-900">Parâmetros</h3>
         </div>
 
@@ -192,9 +192,9 @@ export function PriceResolverSidebar() {
                   {(result.appliedDiscountPct * 100).toFixed(0)} %
                 </dd>
               </div>
-              <div className="col-span-2 rounded-lg bg-emerald-50 p-3">
-                <dt className="text-xs text-emerald-700">Total da linha</dt>
-                <dd className="mt-1 text-2xl font-bold text-emerald-800">
+              <div className="col-span-2 rounded-lg bg-cruor-50 p-3">
+                <dt className="text-xs text-cruor-700">Total da linha</dt>
+                <dd className="mt-1 text-2xl font-bold text-cruor-800">
                   {fmtPrice(result.lineTotalEur)} €
                 </dd>
               </div>

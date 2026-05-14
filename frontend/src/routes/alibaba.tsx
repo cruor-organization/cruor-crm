@@ -84,9 +84,9 @@ function ImportOrderModal({ open, onClose }: { open: boolean; onClose: () => voi
               <div
                 className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
                   i + 1 === step
-                    ? 'bg-emerald-600 text-white'
+                    ? 'bg-cruor-600 text-white'
                     : i + 1 < step
-                      ? 'bg-emerald-100 text-emerald-700'
+                      ? 'bg-cruor-100 text-cruor-700'
                       : 'bg-neutral-100 text-neutral-500'
                 }`}
               >
@@ -338,7 +338,7 @@ function AlibabaPage() {
                           <ChevronRight className="h-4 w-4" />
                         )}
                       </td>
-                      <td className="px-4 py-3 font-mono text-xs font-medium text-emerald-700">
+                      <td className="px-4 py-3 font-mono text-xs font-medium text-cruor-700">
                         {order.id}
                       </td>
                       <td className="px-4 py-3 font-medium text-neutral-900">{order.supplier}</td>

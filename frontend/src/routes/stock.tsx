@@ -172,7 +172,7 @@ function LevelsTab() {
         <label className="flex cursor-pointer items-center gap-2 text-sm">
           <input
             type="checkbox"
-            className="h-4 w-4 rounded border-neutral-300 text-emerald-600"
+            className="h-4 w-4 rounded border-neutral-300 text-cruor-600"
             checked={belowSafety}
             onChange={(e) => setBelowSafety(e.target.checked)}
           />

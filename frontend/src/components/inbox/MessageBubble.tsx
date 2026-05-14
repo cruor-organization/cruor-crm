@@ -29,13 +29,13 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       <div
         className={`max-w-[75%] rounded-xl px-3 py-2 text-sm shadow-sm ${
           isOut
-            ? 'rounded-br-sm bg-emerald-50 border border-emerald-200 text-neutral-800'
+            ? 'rounded-br-sm bg-cruor-50 border border-cruor-200 text-neutral-800'
             : 'rounded-bl-sm bg-white border border-neutral-200 text-neutral-800'
         }`}
       >
         <p className="whitespace-pre-wrap break-words leading-relaxed">{message.body}</p>
         <p
-          className={`mt-1 text-right text-[10px] ${isOut ? 'text-emerald-600' : 'text-neutral-400'}`}
+          className={`mt-1 text-right text-[10px] ${isOut ? 'text-cruor-600' : 'text-neutral-400'}`}
         >
           {formatDay(message.sentAt)} {formatTime(message.sentAt)}
         </p>

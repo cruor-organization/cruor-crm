@@ -134,7 +134,7 @@ function Dashboard() {
         {/* Próximas visitas */}
         <Card padding="md">
           <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-neutral-900">
-            <Calendar size={14} className="text-emerald-600" />
+            <Calendar size={14} className="text-cruor-600" />
             Próximas visitas
           </h2>
           {visitsLoading ? (

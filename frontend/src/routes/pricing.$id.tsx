@@ -112,7 +112,7 @@ function PriceListDetailPage() {
     return (
       <div className="py-16 text-center">
         <p className="text-neutral-500">Lista de preços não encontrada.</p>
-        <Link to="/pricing" className="mt-4 inline-block text-sm text-emerald-600 hover:underline">
+        <Link to="/pricing" className="mt-4 inline-block text-sm text-cruor-600 hover:underline">
           ← Voltar a Preços
         </Link>
       </div>
@@ -192,7 +192,7 @@ function PriceListDetailPage() {
           <ol className="divide-y divide-neutral-100">
             {MOCK_AUDIT.map((entry, idx) => (
               <li key={entry.id} className="flex items-start gap-4 px-4 py-4">
-                <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-700">
+                <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-xs font-semibold text-neutral-700">
                   {idx + 1}
                 </div>
                 <div className="flex-1">

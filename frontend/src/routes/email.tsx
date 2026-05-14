@@ -171,12 +171,12 @@ function EmailPage() {
             <input
               type="text"
               placeholder="Ex: Newsletter Junho 2026"
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-neutral-700">Template</label>
-            <select className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+            <select className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500">
               <option value="newsletter-monthly">Newsletter mensal</option>
               <option value="promotional">Promoção / campanha</option>
               <option value="welcome">Boas-vindas</option>
@@ -187,7 +187,7 @@ function EmailPage() {
             <input
               type="text"
               placeholder="Ex: Subscritores newsletter"
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <p className="text-xs text-neutral-400">Mock — nenhum email será enviado via Resend.</p>

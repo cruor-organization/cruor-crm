@@ -79,7 +79,7 @@ export function ThreadList({
             placeholder="Pesquisar florista…"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full rounded-md border border-neutral-200 py-1.5 pl-8 pr-3 text-sm outline-none placeholder:text-neutral-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+            className="w-full rounded-md border border-neutral-200 py-1.5 pl-8 pr-3 text-sm outline-none placeholder:text-neutral-400 focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
           />
         </div>
         {/* Filtros */}
@@ -91,7 +91,7 @@ export function ThreadList({
               onClick={() => onFilterChange(pill.key)}
               className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors border ${
                 filter === pill.key
-                  ? 'bg-emerald-600 border-emerald-600 text-white'
+                  ? 'bg-cruor-600 border-cruor-600 text-white'
                   : 'bg-white border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50'
               }`}
             >
@@ -116,13 +116,13 @@ export function ThreadList({
                 type="button"
                 onClick={() => onSelect(thread.id)}
                 className={`flex w-full items-start gap-3 px-3 py-3 text-left transition-colors hover:bg-neutral-50 ${
-                  selected ? 'bg-emerald-50 border-r-2 border-emerald-500' : ''
+                  selected ? 'bg-cruor-50 border-r-2 border-cruor-500' : ''
                 }`}
               >
                 {/* Avatar */}
                 <div
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                    selected ? 'bg-emerald-600 text-white' : 'bg-neutral-100 text-neutral-600'
+                    selected ? 'bg-cruor-600 text-white' : 'bg-neutral-100 text-neutral-600'
                   }`}
                 >
                   {initials(thread.customerName)}
@@ -142,7 +142,7 @@ export function ThreadList({
                   </div>
                   <div className="mt-0.5 flex items-center gap-1.5">
                     {thread.channel === 'whatsapp' ? (
-                      <MessageCircle className="h-3 w-3 shrink-0 text-emerald-500" />
+                      <MessageCircle className="h-3 w-3 shrink-0 text-cruor-500" />
                     ) : (
                       <Mail className="h-3 w-3 shrink-0 text-blue-400" />
                     )}
@@ -152,7 +152,7 @@ export function ThreadList({
                       {lastPreview(thread)}
                     </span>
                     {thread.unreadCount > 0 && (
-                      <span className="ml-auto shrink-0 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-bold text-white">
+                      <span className="ml-auto shrink-0 flex h-4 w-4 items-center justify-center rounded-full bg-cruor-600 text-[10px] font-bold text-white">
                         {thread.unreadCount}
                       </span>
                     )}

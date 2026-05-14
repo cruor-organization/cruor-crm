@@ -21,7 +21,7 @@ const BUCKET_LABELS: Record<MarginClassification, string> = {
 };
 
 const BUCKET_COLORS: Record<MarginClassification, { card: string; badge: string; text: string }> = {
-  A: { card: 'border-emerald-200 bg-emerald-50', badge: 'success', text: 'text-emerald-700' },
+  A: { card: 'border-green-200 bg-green-50', badge: 'success', text: 'text-green-700' },
   B: { card: 'border-blue-200 bg-blue-50', badge: 'info', text: 'text-blue-700' },
   C: { card: 'border-amber-200 bg-amber-50', badge: 'warning', text: 'text-amber-700' },
   D: { card: 'border-red-200 bg-red-50', badge: 'danger', text: 'text-red-700' },
@@ -101,7 +101,7 @@ function AbcPage() {
               key={stat.bucket}
               type="button"
               onClick={() => setBucketFilter(isActive ? 'ALL' : stat.bucket)}
-              className={`rounded-lg border p-4 text-left transition-all ${colors.card} ${isActive ? 'ring-2 ring-offset-1 ring-emerald-400' : 'hover:opacity-80'}`}
+              className={`rounded-lg border p-4 text-left transition-all ${colors.card} ${isActive ? 'ring-2 ring-offset-1 ring-cruor-400' : 'hover:opacity-80'}`}
             >
               <p className={`text-lg font-bold ${colors.text}`}>{BUCKET_LABELS[stat.bucket]}</p>
               <p className="mt-1 text-2xl font-semibold text-neutral-900">{stat.count}</p>
@@ -168,7 +168,7 @@ function AbcPage() {
                 return (
                   <tr
                     key={c.id}
-                    className={`hover:bg-neutral-50 ${c.bucket === 'A' ? 'bg-emerald-50/40' : ''}`}
+                    className={`hover:bg-neutral-50 ${c.bucket === 'A' ? 'bg-green-50/40' : ''}`}
                   >
                     <td className="px-4 py-2.5 font-medium text-neutral-800">
                       {c.name.split(' — ')[0]}

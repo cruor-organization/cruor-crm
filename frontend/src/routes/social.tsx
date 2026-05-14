@@ -54,7 +54,7 @@ function PlatformIcon({ platform, size = 14 }: { platform: SocialPlatform; size?
         strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="text-pink-500"
+        className="text-cruor-500"
       >
         <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
         <circle cx="12" cy="12" r="4" />
@@ -117,7 +117,7 @@ const MONTHS_PT = [
 
 function PostPill({ post }: { post: SocialPost }) {
   const colorClass =
-    post.platform === 'instagram' ? 'bg-pink-100 text-pink-700' : 'bg-blue-100 text-blue-700';
+    post.platform === 'instagram' ? 'bg-cruor-100 text-cruor-700' : 'bg-blue-100 text-blue-700';
 
   return (
     <div
@@ -289,15 +289,15 @@ function SocialPage() {
                 onClick={() => setSelectedDay(day === selectedDay ? null : day)}
                 className={`flex h-[80px] flex-col rounded-lg border p-1.5 text-left transition-colors ${
                   isSelected
-                    ? 'border-emerald-400 bg-emerald-50'
+                    ? 'border-cruor-400 bg-cruor-50'
                     : isToday
-                      ? 'border-emerald-200 bg-emerald-50/50'
+                      ? 'border-cruor-200 bg-cruor-50/50'
                       : 'border-transparent hover:border-neutral-200 hover:bg-neutral-50'
                 }`}
               >
                 <span
                   className={`text-xs font-medium ${
-                    isToday ? 'text-emerald-600' : 'text-neutral-600'
+                    isToday ? 'text-cruor-600' : 'text-neutral-600'
                   }`}
                 >
                   {day}
@@ -370,7 +370,7 @@ function SocialPage() {
         <div className="space-y-4">
           <div>
             <label className="mb-1 block text-sm font-medium text-neutral-700">Plataforma</label>
-            <select className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+            <select className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500">
               <option value="instagram">Instagram</option>
               <option value="facebook">Facebook</option>
             </select>
@@ -380,7 +380,7 @@ function SocialPage() {
             <textarea
               rows={3}
               placeholder="Escreva a legenda do post…"
-              className="w-full resize-none rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="w-full resize-none rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <div>
@@ -390,7 +390,7 @@ function SocialPage() {
             <input
               type="text"
               placeholder="Ex: Foto flat-lay flores secas"
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <div>
@@ -399,7 +399,7 @@ function SocialPage() {
             </label>
             <input
               type="datetime-local"
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
             />
           </div>
           <p className="text-xs text-neutral-400">Mock — nenhum post será publicado via n8n.</p>

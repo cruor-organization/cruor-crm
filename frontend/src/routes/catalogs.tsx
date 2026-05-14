@@ -122,7 +122,7 @@ function CatalogsPage() {
             <label className="text-sm font-medium text-neutral-700">Nome do catálogo</label>
             <input
               type="text"
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500"
               placeholder="ex. Catálogo Verão 2027"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -131,7 +131,7 @@ function CatalogsPage() {
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-neutral-700">Época</label>
             <select
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-cruor-500 focus:outline-none focus:ring-1 focus:ring-cruor-500"
               value={form.season}
               onChange={(e) => setForm({ ...form, season: e.target.value })}
             >

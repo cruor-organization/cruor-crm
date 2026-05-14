@@ -71,12 +71,12 @@ function MeetingsPage() {
                 type="button"
                 onClick={() => setSelectedId(m.id)}
                 className={`w-full border-b border-neutral-100 px-4 py-3 text-left transition-colors hover:bg-neutral-50 ${
-                  m.id === effectiveId ? 'bg-emerald-50' : ''
+                  m.id === effectiveId ? 'bg-cruor-50' : ''
                 }`}
               >
                 <p
                   className={`truncate text-sm font-medium ${
-                    m.id === effectiveId ? 'text-emerald-700' : 'text-neutral-800'
+                    m.id === effectiveId ? 'text-cruor-700' : 'text-neutral-800'
                   }`}
                 >
                   {m.title}
@@ -171,8 +171,8 @@ function MeetingsPage() {
                             onClick={() => toggleItem(key)}
                             className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
                               checked
-                                ? 'border-emerald-500 bg-emerald-500'
-                                : 'border-neutral-300 bg-white hover:border-emerald-400'
+                                ? 'border-cruor-500 bg-cruor-500'
+                                : 'border-neutral-300 bg-white hover:border-cruor-400'
                             }`}
                           >
                             {checked && (

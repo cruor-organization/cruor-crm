@@ -273,7 +273,7 @@ function ReturnsPage() {
                           <ChevronRight className="h-4 w-4" />
                         )}
                       </td>
-                      <td className="px-4 py-3 font-mono text-xs font-medium text-emerald-700">
+                      <td className="px-4 py-3 font-mono text-xs font-medium text-cruor-700">
                         {ret.id}
                       </td>
                       <td className="px-4 py-3 font-mono text-xs text-neutral-600">

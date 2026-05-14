@@ -4,7 +4,7 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 const variantMap: Record<ButtonVariant, string> = {
-  primary: 'bg-emerald-600 text-white hover:bg-emerald-700 border-transparent',
+  primary: 'bg-cruor-600 text-white hover:bg-cruor-700 border-transparent',
   secondary: 'bg-white text-neutral-700 border-neutral-300 hover:bg-neutral-50',
   ghost: 'bg-transparent text-neutral-700 border-transparent hover:bg-neutral-100',
 };
@@ -40,7 +40,7 @@ export function Button({
   return (
     <button
       disabled={loading || disabled}
-      className={`inline-flex items-center gap-2 rounded-md border font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${variantMap[variant]} ${sizeMap[size]} ${className}`}
+      className={`inline-flex items-center gap-2 rounded-md border font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cruor-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${variantMap[variant]} ${sizeMap[size]} ${className}`}
       {...props}
     >
       {loading ? (

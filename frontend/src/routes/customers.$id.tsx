@@ -126,7 +126,7 @@ function CustomerDetailPage() {
             <ol className="space-y-4">
               {activitiesData?.items.map((act) => (
                 <li key={act.id} className="flex gap-3">
-                  <div className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-emerald-500" />
+                  <div className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-cruor-500" />
                   <div>
                     <p className="text-sm font-medium text-neutral-800">
                       {KIND_LABELS[act.kind] ?? act.kind}
