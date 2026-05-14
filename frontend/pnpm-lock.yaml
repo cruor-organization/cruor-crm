@@ -7,6 +7,12 @@ settings:
 importers:
   .:
     dependencies:
+      '@fontsource-variable/hanken-grotesk':
+        specifier: ^5.2.8
+        version: 5.2.8
+      '@fontsource-variable/jetbrains-mono':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.75.0(react@18.3.1))
@@ -678,6 +684,18 @@ packages:
         integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==,
       }
     engines: { node: ^18.18.0 || ^20.9.0 || >=21.1.0 }
+
+  '@fontsource-variable/hanken-grotesk@5.2.8':
+    resolution:
+      {
+        integrity: sha512-K7hu09ZKReBc7EifRLeM4K94NZBrxFEg0nGcISmVwlFQOJo4EmYkLXTWEwr5JcNW4z2hr5zy8vLS2sxC8JDmrQ==,
+      }
+
+  '@fontsource-variable/jetbrains-mono@5.2.8':
+    resolution:
+      {
+        integrity: sha512-WBA9elru6Jdp5df2mES55wuOO0WIrn3kpXnI4+W2ek5u3ZgLS9XS4gmIlcQhiZOWEKl95meYdvK7xI+ETLCq/Q==,
+      }
 
   '@hookform/resolvers@3.10.0':
     resolution:
@@ -3434,6 +3452,10 @@ snapshots:
     dependencies:
       '@eslint/core': 0.17.0
       levn: 0.4.1
+
+  '@fontsource-variable/hanken-grotesk@5.2.8': {}
+
+  '@fontsource-variable/jetbrains-mono@5.2.8': {}
 
   '@hookform/resolvers@3.10.0(react-hook-form@7.75.0(react@18.3.1))':
     dependencies:

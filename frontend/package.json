@@ -16,6 +16,8 @@
     "routes:generate": "tsr generate"
   },
   "dependencies": {
+    "@fontsource-variable/hanken-grotesk": "^5.2.8",
+    "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@hookform/resolvers": "^3.10.0",
     "@tanstack/react-query": "^5.62.16",
     "@tanstack/react-router": "^1.95.0",
