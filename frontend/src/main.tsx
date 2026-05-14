@@ -9,6 +9,8 @@ import '@fontsource-variable/jetbrains-mono';
 import './styles/globals.css';
 import { CrmProvider } from './lib/crm/CrmProvider';
 import { initCrmTheme } from './lib/crm/theme';
+import { initThemeMode } from './lib/theme/theme';
+import { ThemeProvider } from './lib/theme/ThemeProvider';
 import { routeTree } from './routeTree.gen';
 
 const queryClient = new QueryClient({
@@ -32,15 +34,19 @@ declare module '@tanstack/react-router' {
 const container = document.getElementById('root');
 if (!container) throw new Error('Missing #root');
 
-// Aplica o tema do CRM guardado antes do primeiro paint (evita flash).
-initCrmTheme();
+// Antes do primeiro paint (evita flash): primeiro o modo claro/escuro, depois
+// as vars do CRM — applyCrmTheme é theme-aware, precisa do tema já resolvido.
+const initialTheme = initThemeMode();
+initCrmTheme(initialTheme);
 
 createRoot(container).render(
   <StrictMode>
-    <CrmProvider>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </CrmProvider>
+    <ThemeProvider>
+      <CrmProvider>
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+        </QueryClientProvider>
+      </CrmProvider>
+    </ThemeProvider>
   </StrictMode>,
 );
