@@ -49,7 +49,7 @@ export const DEFAULT_CRM_ID: CrmId = 'florista';
 const FLORISTA_NAV: NavGroup[] = [
   {
     groupLabel: 'Visão Geral',
-    items: [{ to: '/', label: 'Dashboard', icon: LayoutDashboard }],
+    items: [{ to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }],
   },
   {
     groupLabel: 'Comercial',
