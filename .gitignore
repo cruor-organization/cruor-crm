@@ -55,3 +55,14 @@ ai-service/src/**/*.js.map
 # Misc
 .cache
 *.tgz
+
+# Capturas de iteração visual na raiz (scratch — não são assets do produto;
+# os assets do logo vivem em frontend/public/)
+/btn-check.png
+/btn-check2.png
+/cruor-dashboard.png
+/cruor-final.png
+/cruor-leads.png
+/cruor_logo_dark.png
+/cruor_logo_light.png
+/dashboard-smoke.png
