@@ -121,7 +121,7 @@ export default {
         // Topbar — fio de elevação subtil sobre o canvas.
         topbar: '0 1px 2px rgb(20 24 31 / 0.04), 0 4px 16px -8px rgb(20 24 31 / 0.10)',
         // Halo azul — foco em CTA primário / elementos de marca.
-        glow: '0 0 0 1px rgb(53 104 224 / 0.14), 0 8px 24px -8px rgb(53 104 224 / 0.30)',
+        glow: '0 0 0 1px rgb(var(--cruor-600) / 0.14), 0 8px 24px -8px rgb(var(--cruor-600) / 0.30)',
       },
       keyframes: {
         'fade-rise': {
