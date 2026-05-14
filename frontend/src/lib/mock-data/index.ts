@@ -1,4 +1,5 @@
 export * from './dashboard';
+export * from './hub';
 export * from './pricing';
 export * from './orders';
 export * from './returns';
