@@ -38,5 +38,23 @@ export function pricingRouter(): Router {
     asyncHandler(pricingController.deletePriceList),
   );
 
+  // ----- Lines -----
+  router.get('/lists/:id/lines', asyncHandler(pricingController.listLines));
+  router.post(
+    '/lists/:id/lines',
+    requireRole('SALES_MANAGER', 'ADMIN'),
+    asyncHandler(pricingController.createLine),
+  );
+  router.patch(
+    '/lines/:lineId',
+    requireRole('SALES_MANAGER', 'ADMIN'),
+    asyncHandler(pricingController.updateLine),
+  );
+  router.delete(
+    '/lines/:lineId',
+    requireRole('SALES_MANAGER', 'ADMIN'),
+    asyncHandler(pricingController.deleteLine),
+  );
+
   return router;
 }

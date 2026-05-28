@@ -1,6 +1,7 @@
-import type { PriceList, PriceListStatus } from '@prisma/client';
+import type { PriceList, PriceListLine, PriceListStatus } from '@prisma/client';
 
 import { prisma } from '../../db/index.js';
+import { enforceFloor } from '../../domain/pricing/price-floor.js';
 import type { AuthContext } from '../../middlewares/auth-context.js';
 import { ConflictError, NotFoundError } from '../../shared/errors.js';
 import { writeAudit } from '../audit/audit.service.js';
@@ -8,8 +9,10 @@ import { writeAudit } from '../audit/audit.service.js';
 import { pricingRepository } from './pricing.repository.js';
 import type {
   CreatePriceListInput,
+  CreatePriceListLineInput,
   ListPriceListsQuery,
   UpdatePriceListInput,
+  UpdatePriceListLineInput,
 } from './pricing.schemas.js';
 
 /**
@@ -101,17 +104,35 @@ export const pricingService = {
   /**
    * DRAFT → ACTIVE em transação. Se já existir ACTIVE no mesmo tier,
    * arquiva a anterior (status=ARCHIVED, validUntil=now) antes de activar.
-   * Exige pelo menos 1 linha; a revalidação de floor por linha vem na S3.
+   * Exige pelo menos 1 linha e revalida floor de todas (cobre alterações
+   * de cost desde o draft).
    */
   async activatePriceList(ctx: AuthContext, id: string): Promise<PriceList> {
     const existing = await this.getPriceList(ctx, id);
     assertTransition(existing.status, 'ACTIVE');
 
-    const lineCount = await prisma.priceListLine.count({
+    const lines = await prisma.priceListLine.findMany({
       where: { organizationId: ctx.orgId, priceListId: id },
+      include: { variant: { select: { id: true, sku: true, costEur: true } } },
     });
-    if (lineCount === 0)
+    if (lines.length === 0)
       throw new ConflictError('PRICE_LIST_NO_LINES', 'Lista sem linhas não pode ser activada.');
+
+    for (const line of lines) {
+      const cost = line.variant.costEur ? Number(line.variant.costEur) : 0;
+      try {
+        enforceFloor(Number(line.unitPriceEur), cost);
+      } catch (err) {
+        if (err instanceof Error && 'code' in err && err.code === 'PRICE_BELOW_FLOOR') {
+          throw new ConflictError(
+            'PRICE_LIST_FLOOR_VIOLATION',
+            `Linha ${line.variant.sku} viola o floor (cost × 1.10).`,
+            { lineId: line.id, variantId: line.variant.id },
+          );
+        }
+        throw err;
+      }
+    }
 
     const now = new Date();
     const result = await prisma.$transaction(async (tx) => {
@@ -169,7 +190,115 @@ export const pricingService = {
     await prisma.priceList.delete({ where: { id } });
     await writeAudit(ctx, 'price_list', id, 'DELETE');
   },
+
+  // ----- Lines -----
+
+  async listLines(ctx: AuthContext, priceListId: string) {
+    await this.getPriceList(ctx, priceListId);
+    return pricingRepository.listLines(ctx.orgId, priceListId);
+  },
+
+  async createLine(
+    ctx: AuthContext,
+    priceListId: string,
+    input: CreatePriceListLineInput,
+  ): Promise<PriceListLine> {
+    const list = await this.getPriceList(ctx, priceListId);
+    if (list.status === 'ARCHIVED')
+      throw new ConflictError('PRICE_LIST_ARCHIVED', 'Lista arquivada é imutável.');
+
+    await assertVariantFloor(ctx.orgId, input.variantId, input.unitPriceEur);
+
+    const line = await prisma.priceListLine
+      .create({
+        data: {
+          organizationId: ctx.orgId,
+          priceListId,
+          variantId: input.variantId,
+          unitPriceEur: input.unitPriceEur,
+          minQty: input.minQty,
+          discountBreaks: input.discountBreaks,
+        },
+      })
+      .catch((err: unknown) => {
+        if (isUniqueViolation(err))
+          throw new ConflictError(
+            'PRICE_LIST_LINE_DUPLICATE',
+            'Já existe linha para esse variant + minQty nesta lista.',
+          );
+        throw err;
+      });
+    await writeAudit(ctx, 'price_list_line', line.id, 'CREATE', {
+      priceListId,
+      variantId: input.variantId,
+      unitPriceEur: input.unitPriceEur,
+    });
+    return line;
+  },
+
+  async updateLine(
+    ctx: AuthContext,
+    lineId: string,
+    input: UpdatePriceListLineInput,
+  ): Promise<PriceListLine> {
+    const existing = await pricingRepository.findLineById(ctx.orgId, lineId);
+    if (!existing) throw new NotFoundError('PRICE_LIST_LINE_NOT_FOUND');
+    const list = await pricingRepository.findPriceListById(ctx.orgId, existing.priceListId);
+    if (list?.status === 'ARCHIVED')
+      throw new ConflictError('PRICE_LIST_ARCHIVED', 'Lista arquivada é imutável.');
+
+    if (input.unitPriceEur !== undefined) {
+      await assertVariantFloor(ctx.orgId, existing.variantId, input.unitPriceEur);
+    }
+
+    const updated = await prisma.priceListLine
+      .update({
+        where: { id: lineId },
+        data: {
+          ...(input.unitPriceEur !== undefined ? { unitPriceEur: input.unitPriceEur } : {}),
+          ...(input.minQty !== undefined ? { minQty: input.minQty } : {}),
+          ...(input.discountBreaks !== undefined ? { discountBreaks: input.discountBreaks } : {}),
+        },
+      })
+      .catch((err: unknown) => {
+        if (isUniqueViolation(err))
+          throw new ConflictError(
+            'PRICE_LIST_LINE_DUPLICATE',
+            'minQty colide com outra linha do mesmo variant.',
+          );
+        throw err;
+      });
+    await writeAudit(ctx, 'price_list_line', lineId, 'UPDATE', input);
+    return updated;
+  },
+
+  async deleteLine(ctx: AuthContext, lineId: string): Promise<void> {
+    const existing = await pricingRepository.findLineById(ctx.orgId, lineId);
+    if (!existing) throw new NotFoundError('PRICE_LIST_LINE_NOT_FOUND');
+    const list = await pricingRepository.findPriceListById(ctx.orgId, existing.priceListId);
+    if (list?.status === 'ARCHIVED')
+      throw new ConflictError('PRICE_LIST_ARCHIVED', 'Lista arquivada é imutável.');
+    await prisma.priceListLine.delete({ where: { id: lineId } });
+    await writeAudit(ctx, 'price_list_line', lineId, 'DELETE', {
+      priceListId: existing.priceListId,
+    });
+  },
 };
+
+/** Lê variant.costEur e aplica enforceFloor; lança ValidationError('PRICE_BELOW_FLOOR'). */
+async function assertVariantFloor(
+  organizationId: string,
+  variantId: string,
+  unitPriceEur: number,
+): Promise<void> {
+  const variant = await prisma.productVariant.findFirst({
+    where: { id: variantId, organizationId },
+    select: { id: true, costEur: true },
+  });
+  if (!variant) throw new NotFoundError('VARIANT_NOT_FOUND');
+  const cost = variant.costEur ? Number(variant.costEur) : 0;
+  enforceFloor(unitPriceEur, cost);
+}
 
 function isUniqueViolation(err: unknown): boolean {
   return typeof err === 'object' && err !== null && 'code' in err && err.code === 'P2002';

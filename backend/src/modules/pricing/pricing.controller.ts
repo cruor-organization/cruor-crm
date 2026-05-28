@@ -3,8 +3,10 @@ import type { Request, Response } from 'express';
 import { getCtx } from '../../middlewares/auth-context.js';
 
 import {
+  createPriceListLineSchema,
   createPriceListSchema,
   listPriceListsQuerySchema,
+  updatePriceListLineSchema,
   updatePriceListSchema,
 } from './pricing.schemas.js';
 import { pricingService } from './pricing.service.js';
@@ -46,6 +48,31 @@ export const pricingController = {
   async deletePriceList(req: Request, res: Response): Promise<void> {
     const ctx = getCtx(req);
     await pricingService.deletePriceList(ctx, req.params.id ?? '');
+    res.status(204).end();
+  },
+
+  // ----- Lines -----
+
+  async listLines(req: Request, res: Response): Promise<void> {
+    const ctx = getCtx(req);
+    res.json(await pricingService.listLines(ctx, req.params.id ?? ''));
+  },
+
+  async createLine(req: Request, res: Response): Promise<void> {
+    const ctx = getCtx(req);
+    const input = createPriceListLineSchema.parse(req.body);
+    res.status(201).json(await pricingService.createLine(ctx, req.params.id ?? '', input));
+  },
+
+  async updateLine(req: Request, res: Response): Promise<void> {
+    const ctx = getCtx(req);
+    const input = updatePriceListLineSchema.parse(req.body);
+    res.json(await pricingService.updateLine(ctx, req.params.lineId ?? '', input));
+  },
+
+  async deleteLine(req: Request, res: Response): Promise<void> {
+    const ctx = getCtx(req);
+    await pricingService.deleteLine(ctx, req.params.lineId ?? '');
     res.status(204).end();
   },
 };
