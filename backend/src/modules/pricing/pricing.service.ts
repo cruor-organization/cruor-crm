@@ -1,4 +1,9 @@
-import type { PriceList, PriceListLine, PriceListStatus } from '@prisma/client';
+import type {
+  CustomerSpecialPrice,
+  PriceList,
+  PriceListLine,
+  PriceListStatus,
+} from '@prisma/client';
 
 import { prisma } from '../../db/index.js';
 import { enforceFloor } from '../../domain/pricing/price-floor.js';
@@ -10,9 +15,12 @@ import { pricingRepository } from './pricing.repository.js';
 import type {
   CreatePriceListInput,
   CreatePriceListLineInput,
+  CreateSpecialPriceInput,
   ListPriceListsQuery,
+  ListSpecialsQuery,
   UpdatePriceListInput,
   UpdatePriceListLineInput,
+  UpdateSpecialPriceInput,
 } from './pricing.schemas.js';
 
 /**
@@ -281,6 +289,89 @@ export const pricingService = {
     await prisma.priceListLine.delete({ where: { id: lineId } });
     await writeAudit(ctx, 'price_list_line', lineId, 'DELETE', {
       priceListId: existing.priceListId,
+    });
+  },
+
+  // ----- CustomerSpecialPrice -----
+
+  listSpecials(ctx: AuthContext, query: ListSpecialsQuery) {
+    return pricingRepository.listSpecials({
+      organizationId: ctx.orgId,
+      now: new Date(),
+      take: query.take,
+      skip: query.skip,
+      activeOnly: query.activeOnly,
+      ...(query.customerId ? { customerId: query.customerId } : {}),
+      ...(query.variantId ? { variantId: query.variantId } : {}),
+    });
+  },
+
+  async createSpecial(
+    ctx: AuthContext,
+    input: CreateSpecialPriceInput,
+  ): Promise<CustomerSpecialPrice> {
+    await assertVariantFloor(ctx.orgId, input.variantId, input.unitPriceEur);
+
+    const special = await prisma.customerSpecialPrice
+      .create({
+        data: {
+          organizationId: ctx.orgId,
+          customerId: input.customerId,
+          variantId: input.variantId,
+          unitPriceEur: input.unitPriceEur,
+          validFrom: input.validFrom,
+          validUntil: input.validUntil ?? null,
+          reason: input.reason ?? null,
+          createdById: ctx.actorId,
+        },
+      })
+      .catch((err: unknown) => {
+        if (isUniqueViolation(err))
+          throw new ConflictError(
+            'SPECIAL_PRICE_DUPLICATE',
+            'Já existe preço especial para esse cliente + variant + validFrom.',
+          );
+        throw err;
+      });
+    await writeAudit(ctx, 'customer_special_price', special.id, 'CREATE', {
+      customerId: special.customerId,
+      variantId: special.variantId,
+      unitPriceEur: input.unitPriceEur,
+    });
+    return special;
+  },
+
+  async updateSpecial(
+    ctx: AuthContext,
+    id: string,
+    input: UpdateSpecialPriceInput,
+  ): Promise<CustomerSpecialPrice> {
+    const existing = await pricingRepository.findSpecialById(ctx.orgId, id);
+    if (!existing) throw new NotFoundError('SPECIAL_PRICE_NOT_FOUND');
+
+    if (input.unitPriceEur !== undefined) {
+      await assertVariantFloor(ctx.orgId, existing.variantId, input.unitPriceEur);
+    }
+
+    const updated = await prisma.customerSpecialPrice.update({
+      where: { id },
+      data: {
+        ...(input.unitPriceEur !== undefined ? { unitPriceEur: input.unitPriceEur } : {}),
+        ...(input.validUntil !== undefined ? { validUntil: input.validUntil } : {}),
+        ...(input.reason !== undefined ? { reason: input.reason } : {}),
+      },
+    });
+    await writeAudit(ctx, 'customer_special_price', id, 'UPDATE', input);
+    return updated;
+  },
+
+  async deleteSpecial(ctx: AuthContext, id: string): Promise<void> {
+    const existing = await pricingRepository.findSpecialById(ctx.orgId, id);
+    if (!existing) throw new NotFoundError('SPECIAL_PRICE_NOT_FOUND');
+    await prisma.customerSpecialPrice.delete({ where: { id } });
+    await writeAudit(ctx, 'customer_special_price', id, 'DELETE', {
+      customerId: existing.customerId,
+      variantId: existing.variantId,
     });
   },
 };

@@ -5,9 +5,12 @@ import { getCtx } from '../../middlewares/auth-context.js';
 import {
   createPriceListLineSchema,
   createPriceListSchema,
+  createSpecialPriceSchema,
   listPriceListsQuerySchema,
+  listSpecialsQuerySchema,
   updatePriceListLineSchema,
   updatePriceListSchema,
+  updateSpecialPriceSchema,
 } from './pricing.schemas.js';
 import { pricingService } from './pricing.service.js';
 
@@ -73,6 +76,32 @@ export const pricingController = {
   async deleteLine(req: Request, res: Response): Promise<void> {
     const ctx = getCtx(req);
     await pricingService.deleteLine(ctx, req.params.lineId ?? '');
+    res.status(204).end();
+  },
+
+  // ----- Specials -----
+
+  async listSpecials(req: Request, res: Response): Promise<void> {
+    const ctx = getCtx(req);
+    const query = listSpecialsQuerySchema.parse(req.query);
+    res.json(await pricingService.listSpecials(ctx, query));
+  },
+
+  async createSpecial(req: Request, res: Response): Promise<void> {
+    const ctx = getCtx(req);
+    const input = createSpecialPriceSchema.parse(req.body);
+    res.status(201).json(await pricingService.createSpecial(ctx, input));
+  },
+
+  async updateSpecial(req: Request, res: Response): Promise<void> {
+    const ctx = getCtx(req);
+    const input = updateSpecialPriceSchema.parse(req.body);
+    res.json(await pricingService.updateSpecial(ctx, req.params.id ?? '', input));
+  },
+
+  async deleteSpecial(req: Request, res: Response): Promise<void> {
+    const ctx = getCtx(req);
+    await pricingService.deleteSpecial(ctx, req.params.id ?? '');
     res.status(204).end();
   },
 };

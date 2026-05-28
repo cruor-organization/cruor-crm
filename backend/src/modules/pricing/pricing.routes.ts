@@ -56,5 +56,23 @@ export function pricingRouter(): Router {
     asyncHandler(pricingController.deleteLine),
   );
 
+  // ----- Specials -----
+  router.get('/specials', asyncHandler(pricingController.listSpecials));
+  router.post(
+    '/specials',
+    requireRole('SALES_MANAGER', 'ADMIN'),
+    asyncHandler(pricingController.createSpecial),
+  );
+  router.patch(
+    '/specials/:id',
+    requireRole('SALES_MANAGER', 'ADMIN'),
+    asyncHandler(pricingController.updateSpecial),
+  );
+  router.delete(
+    '/specials/:id',
+    requireRole('SALES_MANAGER', 'ADMIN'),
+    asyncHandler(pricingController.deleteSpecial),
+  );
+
   return router;
 }
