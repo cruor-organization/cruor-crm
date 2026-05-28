@@ -10,6 +10,8 @@ export function productsRouter(): Router {
   router.use(requireAuth());
 
   router.get('/', asyncHandler(productsController.list));
+  // Rota concreta antes da paramétrica para o Express não tratar "variants" como :id.
+  router.get('/variants', asyncHandler(productsController.listVariants));
   router.get('/:id', asyncHandler(productsController.get));
   router.patch(
     '/:id/decision',

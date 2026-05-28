@@ -48,6 +48,47 @@ export const productsService = {
     return { items, total };
   },
 
+  /**
+   * Lista flat de variantes para popular dropdowns no frontend (pricing,
+   * quotes, orders). Devolve apenas o essencial; sem paginação pesada.
+   */
+  async listVariants(ctx: AuthContext, query: { q?: string; take: number }) {
+    const items = await prisma.productVariant.findMany({
+      where: {
+        organizationId: ctx.orgId,
+        product: { deletedAt: null },
+        ...(query.q
+          ? {
+              OR: [
+                { sku: { contains: query.q, mode: 'insensitive' } },
+                { label: { contains: query.q, mode: 'insensitive' } },
+                { product: { name: { contains: query.q, mode: 'insensitive' } } },
+              ],
+            }
+          : {}),
+      },
+      select: {
+        id: true,
+        sku: true,
+        label: true,
+        costEur: true,
+        product: { select: { id: true, name: true } },
+      },
+      orderBy: [{ product: { name: 'asc' } }, { label: 'asc' }],
+      take: query.take,
+    });
+    return {
+      items: items.map((v) => ({
+        id: v.id,
+        sku: v.sku,
+        label: v.label,
+        productId: v.product.id,
+        productName: v.product.name,
+        costEur: v.costEur,
+      })),
+    };
+  },
+
   async getById(ctx: AuthContext, id: string): Promise<Product> {
     const product = await prisma.product.findFirst({
       where: { id, organizationId: ctx.orgId, deletedAt: null },

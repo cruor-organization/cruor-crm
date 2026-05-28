@@ -74,5 +74,8 @@ export function pricingRouter(): Router {
     asyncHandler(pricingController.deleteSpecial),
   );
 
+  // ----- Resolve -----
+  router.post('/resolve', asyncHandler(pricingController.resolve));
+
   return router;
 }

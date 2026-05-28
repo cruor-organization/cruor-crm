@@ -8,6 +8,7 @@ import {
   createSpecialPriceSchema,
   listPriceListsQuerySchema,
   listSpecialsQuerySchema,
+  resolvePriceSchema,
   updatePriceListLineSchema,
   updatePriceListSchema,
   updateSpecialPriceSchema,
@@ -103,5 +104,11 @@ export const pricingController = {
     const ctx = getCtx(req);
     await pricingService.deleteSpecial(ctx, req.params.id ?? '');
     res.status(204).end();
+  },
+
+  async resolve(req: Request, res: Response): Promise<void> {
+    const ctx = getCtx(req);
+    const input = resolvePriceSchema.parse(req.body);
+    res.json(await pricingService.resolve(ctx, input));
   },
 };

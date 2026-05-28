@@ -7,6 +7,7 @@ import type {
 
 import { prisma } from '../../db/index.js';
 import { enforceFloor } from '../../domain/pricing/price-floor.js';
+import { resolvePrice, type ResolvedPrice } from '../../domain/pricing/resolve-price.js';
 import type { AuthContext } from '../../middlewares/auth-context.js';
 import { ConflictError, NotFoundError } from '../../shared/errors.js';
 import { writeAudit } from '../audit/audit.service.js';
@@ -18,6 +19,7 @@ import type {
   CreateSpecialPriceInput,
   ListPriceListsQuery,
   ListSpecialsQuery,
+  ResolvePriceInput,
   UpdatePriceListInput,
   UpdatePriceListLineInput,
   UpdateSpecialPriceInput,
@@ -372,6 +374,67 @@ export const pricingService = {
     await writeAudit(ctx, 'customer_special_price', id, 'DELETE', {
       customerId: existing.customerId,
       variantId: existing.variantId,
+    });
+  },
+
+  // ----- Resolve -----
+
+  /**
+   * Determina o preço aplicável para (variant, qty, customer?, tier?) hoje.
+   * Orquestra: variant lookup → customer (para inferir tier) → special activo
+   * → melhor tier line. Delega a hierarquia ao `resolvePrice` puro.
+   */
+  async resolve(ctx: AuthContext, input: ResolvePriceInput): Promise<ResolvedPrice> {
+    const variant = await prisma.productVariant.findFirst({
+      where: { id: input.variantId, organizationId: ctx.orgId },
+      select: { id: true, costEur: true },
+    });
+    if (!variant) throw new NotFoundError('VARIANT_NOT_FOUND');
+
+    let tier = input.tier ?? null;
+    if (input.customerId) {
+      const customer = await prisma.customer.findFirst({
+        where: { id: input.customerId, organizationId: ctx.orgId, deletedAt: null },
+        select: { pricingTier: true },
+      });
+      if (!customer) throw new NotFoundError('CUSTOMER_NOT_FOUND');
+      tier ??= customer.pricingTier;
+    }
+    if (!tier) throw new NotFoundError('PRICE_TIER_UNKNOWN');
+
+    const now = new Date();
+    const [special, line] = await Promise.all([
+      input.customerId
+        ? pricingRepository.findActiveSpecial({
+            organizationId: ctx.orgId,
+            customerId: input.customerId,
+            variantId: input.variantId,
+            now,
+          })
+        : Promise.resolve(null),
+      pricingRepository.findActiveTierLine({
+        organizationId: ctx.orgId,
+        tier,
+        variantId: input.variantId,
+        qty: input.qty,
+      }),
+    ]);
+
+    return resolvePrice({
+      qty: input.qty,
+      customerSpecial: special
+        ? { unitPriceEur: Number(special.unitPriceEur), validUntil: special.validUntil }
+        : null,
+      tierLine: line
+        ? {
+            unitPriceEur: Number(line.unitPriceEur),
+            minQty: line.minQty,
+            discountBreaks: line.discountBreaks as { minQty: number; discountPct: number }[],
+          }
+        : null,
+      landedEur: variant.costEur ? Number(variant.costEur) : 0,
+      now,
+      override: input.override ?? null,
     });
   },
 };

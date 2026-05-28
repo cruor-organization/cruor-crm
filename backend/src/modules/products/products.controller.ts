@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { z } from 'zod';
 
 import { getCtx } from '../../middlewares/auth-context.js';
 
@@ -11,10 +12,23 @@ import {
 } from './products.schemas.js';
 import { productsService } from './products.service.js';
 
+const listVariantsQuerySchema = z
+  .object({
+    q: z.string().max(200).optional(),
+    take: z.coerce.number().int().min(1).max(200).default(100),
+  })
+  .strict();
+
 export const productsController = {
   async list(req: Request, res: Response): Promise<void> {
     const ctx = getCtx(req);
     res.json(await productsService.list(ctx, listProductsQuerySchema.parse(req.query)));
+  },
+
+  async listVariants(req: Request, res: Response): Promise<void> {
+    const ctx = getCtx(req);
+    const query = listVariantsQuerySchema.parse(req.query);
+    res.json(await productsService.listVariants(ctx, query));
   },
 
   async get(req: Request, res: Response): Promise<void> {
