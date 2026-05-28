@@ -19,6 +19,7 @@ import { errorHandler } from './middlewares/error.js';
 import { requestId, REQUEST_ID_HEADER } from './middlewares/request-id.js';
 import { customersRouter } from './modules/customers/customers.routes.js';
 import { leadsRouter } from './modules/leads/leads.routes.js';
+import { pricingRouter } from './modules/pricing/pricing.routes.js';
 import { productsRouter } from './modules/products/products.routes.js';
 import { stockRouter } from './modules/stock/stock.routes.js';
 import { suppliersRouter } from './modules/suppliers/suppliers.routes.js';
@@ -95,6 +96,7 @@ export function createApp(env: Env): CreatedApp {
   app.use('/api/leads', leadsRouter());
   app.use('/api/products', productsRouter());
   app.use('/api/stock', stockRouter());
+  app.use('/api/pricing', pricingRouter());
 
   app.use((_req, res) => {
     res.status(404).json({ code: 'NOT_FOUND', message: 'Rota não encontrada.' });
