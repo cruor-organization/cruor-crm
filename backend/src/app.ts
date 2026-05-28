@@ -17,6 +17,7 @@ import { createLogger } from './logger.js';
 import { attachAuthContext } from './middlewares/auth-context.js';
 import { errorHandler } from './middlewares/error.js';
 import { requestId, REQUEST_ID_HEADER } from './middlewares/request-id.js';
+import { auditRouter } from './modules/audit/audit.routes.js';
 import { customersRouter } from './modules/customers/customers.routes.js';
 import { leadsRouter } from './modules/leads/leads.routes.js';
 import { pricingRouter } from './modules/pricing/pricing.routes.js';
@@ -97,6 +98,7 @@ export function createApp(env: Env): CreatedApp {
   app.use('/api/products', productsRouter());
   app.use('/api/stock', stockRouter());
   app.use('/api/pricing', pricingRouter());
+  app.use('/api/audit', auditRouter());
 
   app.use((_req, res) => {
     res.status(404).json({ code: 'NOT_FOUND', message: 'Rota não encontrada.' });
