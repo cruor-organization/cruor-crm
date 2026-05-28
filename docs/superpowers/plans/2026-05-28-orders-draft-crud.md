@@ -10,6 +10,19 @@
 
 ---
 
+## Estado de execução (pausa 2026-05-28)
+
+Execução inline pausada a pedido do utilizador. Retomar daqui:
+
+- ✅ **Task 1 — completa e commitada** (`e568ef2`). Schema editado, back-relations adicionadas, migration `backend/prisma/migrations/20260528_orders_draft/` **aplicada na DB de dev** e Prisma Client regenerado; typecheck verde.
+  - Nota: `prisma migrate dev` falha em ambiente não-interativo. O fluxo usado foi: gerar SQL com `npx prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --script > .../migration.sql` e aplicar com `pnpm db:migrate` (deploy). Repetir este fluxo nas próximas migrations enquanto o ambiente não tiver TTY.
+- 🔄 **Task 2 — a meio.** O ficheiro de teste `backend/src/domain/orders/recompute-totals.test.ts` **já está escrito** (não commitado). **Próximo passo concreto**: Step 2 (correr o teste e ver falhar) → Step 3 (criar `recompute-totals.ts`) → Step 4 (passar) → Step 5 (commit). Continuar depois com Tasks 3–10 conforme abaixo.
+- ⬜ **Tasks 3–10** — por fazer.
+
+Pré-requisito para retomar: DB de dev a correr (`supabase_db` / `make up`). Trabalho na branch `main` (convenção solo do utilizador).
+
+---
+
 ## Ficheiros
 
 - Criar: `backend/src/domain/orders/recompute-totals.ts` — função pura: linhas → {subtotal, vat, total}.
