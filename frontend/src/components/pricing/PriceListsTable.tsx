@@ -4,12 +4,23 @@
 import { useNavigate } from '@tanstack/react-router';
 
 import { Badge } from '@/components/ui/Badge';
-import type { MockPriceList, PriceListStatus, PricingTier } from '@/lib/mock-data/pricing';
+import type { PriceListStatus, PriceListCurrency, PricingTier } from '@/lib/schemas/pricing';
 
 type BadgeVariant = 'neutral' | 'success' | 'warning' | 'danger' | 'info';
 
+export interface PriceListRow {
+  id: string;
+  name: string;
+  tier: PricingTier;
+  currency: PriceListCurrency;
+  validFrom: string;
+  validUntil: string | null;
+  status: PriceListStatus;
+  lineCount: number;
+}
+
 interface PriceListsTableProps {
-  lists: MockPriceList[];
+  lists: PriceListRow[];
 }
 
 const STATUS_VARIANT: Record<PriceListStatus, BadgeVariant> = {

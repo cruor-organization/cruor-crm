@@ -3,11 +3,22 @@
  */
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import type { MockCustomerSpecialPrice } from '@/lib/mock-data/pricing';
+
+export interface SpecialPriceRow {
+  id: string;
+  customerId: string;
+  customerName: string;
+  variantId: string;
+  variantName: string;
+  unitPriceEur: number;
+  validFrom: string;
+  validUntil: string | null;
+  reason: string | null;
+}
 
 interface SpecialPricesTableProps {
-  specials: MockCustomerSpecialPrice[];
-  onEdit?: (s: MockCustomerSpecialPrice) => void;
+  specials: SpecialPriceRow[];
+  onEdit?: (s: SpecialPriceRow) => void;
   onRemove?: (id: string) => void;
 }
 
