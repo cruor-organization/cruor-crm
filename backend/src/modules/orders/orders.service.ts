@@ -13,8 +13,8 @@
 import type { Prisma } from '@prisma/client';
 
 import { prisma, PrismaNamespace } from '../../db/index.js';
-import { recomputeTotals } from '../../domain/orders/recompute-totals.js';
 import { buildOrderNumber } from '../../domain/orders/order-number.js';
+import { recomputeTotals } from '../../domain/orders/recompute-totals.js';
 import type { AuthContext } from '../../middlewares/auth-context.js';
 import { ConflictError, ForbiddenError, NotFoundError } from '../../shared/errors.js';
 import { hasAnyRole } from '../../shared/rbac.js';

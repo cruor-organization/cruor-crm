@@ -1,8 +1,8 @@
 // backend/src/modules/orders/orders.service.test.ts
 import { describe, expect, it } from 'vitest';
 
-import { ConflictError } from '../../shared/errors.js';
 import type { AuthContext } from '../../middlewares/auth-context.js';
+import { ConflictError } from '../../shared/errors.js';
 
 import { assertDraft, assertNoDuplicateVariants, scopeForRole } from './orders.service.js';
 import type { ResolvedLine } from './orders.service.js';
