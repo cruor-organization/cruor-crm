@@ -13,19 +13,28 @@
 import type { Prisma } from '@prisma/client';
 
 import { prisma, PrismaNamespace } from '../../db/index.js';
+import { assertTransition } from '../../domain/orders/order-fsm.js';
 import { buildOrderNumber } from '../../domain/orders/order-number.js';
 import { recomputeTotals } from '../../domain/orders/recompute-totals.js';
 import type { AuthContext } from '../../middlewares/auth-context.js';
-import { ConflictError, ForbiddenError, NotFoundError } from '../../shared/errors.js';
+import {
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  ValidationError,
+} from '../../shared/errors.js';
 import { hasAnyRole } from '../../shared/rbac.js';
 import { writeAudit } from '../audit/audit.service.js';
 import { pricingService } from '../pricing/pricing.service.js';
+import { stockRepository } from '../stock/stock.repository.js';
+import { releaseWithinTx, reserveWithinTx } from '../stock/stock.service.js';
 
 import { ordersRepository, type OrderWithLines } from './orders.repository.js';
 import type {
   AddOrderLineInput,
   CreateOrderInput,
   ListOrdersQuery,
+  TransitionOrderInput,
   UpdateOrderInput,
   UpdateOrderLineInput,
 } from './orders.schemas.js';
@@ -215,6 +224,41 @@ export const ordersService = {
     await writeAudit(ctx, 'customer_order', orderId, 'UPDATE', { removedLine: lineId });
     return this.getById(ctx, orderId);
   },
+
+  async transition(
+    ctx: AuthContext,
+    id: string,
+    input: TransitionOrderInput,
+  ): Promise<OrderWithLines> {
+    const order = await this.getById(ctx, id);
+    assertTransition(order.status, input.to);
+
+    await prisma.$transaction(async (tx) => {
+      if (input.to === 'CONFIRMED') {
+        await reserveOrderLines(tx, ctx, order);
+      } else if (input.to === 'CANCELLED' && order.status === 'CONFIRMED') {
+        await releaseOrderReserves(tx, ctx, order.id);
+      }
+      await tx.customerOrder.update({ where: { id }, data: { status: input.to } });
+      await tx.orderStatusHistory.create({
+        data: {
+          organizationId: ctx.orgId,
+          orderId: id,
+          fromStatus: order.status,
+          toStatus: input.to,
+          actorId: ctx.actorId,
+          ...(input.reason !== undefined ? { reason: input.reason } : {}),
+        },
+      });
+    });
+
+    await writeAudit(ctx, 'customer_order', id, 'STATUS_CHANGE', {
+      from: order.status,
+      to: input.to,
+      ...(input.reason !== undefined ? { reason: input.reason } : {}),
+    });
+    return this.getById(ctx, id);
+  },
 };
 
 // ----------------------------------------------------------------------------
@@ -336,6 +380,43 @@ async function recomputeAndPersist(
     lines.map((l) => ({ lineTotalEur: Number(l.lineTotalEur), vatPct: Number(l.vatPct) })),
   );
   await tx.customerOrder.update({ where: { id: orderId }, data: totals });
+}
+
+async function reserveOrderLines(
+  tx: Prisma.TransactionClient,
+  ctx: AuthContext,
+  order: OrderWithLines,
+): Promise<void> {
+  if (order.lines.length === 0) {
+    throw new ValidationError(
+      'ORDER_HAS_NO_LINES',
+      'Não é possível confirmar uma encomenda sem linhas.',
+    );
+  }
+  const location = await stockRepository.findDefaultLocation(ctx.orgId);
+  if (!location) {
+    throw new ConflictError('NO_DEFAULT_LOCATION', 'A organização não tem armazém default ativo.');
+  }
+  for (const line of order.lines) {
+    await reserveWithinTx(tx, ctx, {
+      variantId: line.variantId,
+      locationId: location.id,
+      qty: line.qty,
+      refType: 'ORDER',
+      refId: order.id,
+    });
+  }
+}
+
+async function releaseOrderReserves(
+  tx: Prisma.TransactionClient,
+  ctx: AuthContext,
+  orderId: string,
+): Promise<void> {
+  const reserves = await stockRepository.findActiveReservesForRef(tx, ctx.orgId, 'ORDER', orderId);
+  for (const reserve of reserves) {
+    await releaseWithinTx(tx, ctx, reserve);
+  }
 }
 
 function jsonOrNull(
