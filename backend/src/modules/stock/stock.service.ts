@@ -151,6 +151,59 @@ export async function releaseWithinTx(
   return { movement, level };
 }
 
+/**
+ * Converte UMA reserva em saída física (RESERVE→OUT) DENTRO de uma transação
+ * existente. Usado ao despachar (§7.5, §380). `available` NÃO muda — já foi
+ * decrementado no RESERVE; aqui só desce `reserved`. Convenção: `reason="shipped:<reserveId>"`.
+ */
+export async function shipReserveWithinTx(
+  tx: Prisma.TransactionClient,
+  ctx: AuthContext,
+  reserve: StockMovement,
+): Promise<{ movement: StockMovement; level: StockLevel }> {
+  const [locked] = await stockRepository.lockLevelForUpdate(
+    tx,
+    ctx.orgId,
+    reserve.variantId,
+    reserve.locationId,
+  );
+  if (!locked) throw new NotFoundError('STOCK_LEVEL_NOT_FOUND');
+  if (locked.reserved < reserve.qty) {
+    throw new ConflictError('RESERVATION_INCONSISTENT', 'Reserved < qty da reserva.', {
+      reserved: locked.reserved,
+      required: reserve.qty,
+    });
+  }
+
+  await tx.stockLevel.update({
+    where: { id: locked.id },
+    data: { reserved: { decrement: reserve.qty } },
+  });
+
+  const movement = await tx.stockMovement.create({
+    data: {
+      organizationId: ctx.orgId,
+      variantId: reserve.variantId,
+      locationId: reserve.locationId,
+      kind: 'OUT',
+      qty: reserve.qty,
+      refType: reserve.refType,
+      refId: reserve.refId,
+      reason: `shipped:${reserve.id}`,
+      actorId: ctx.actorId,
+    },
+  });
+
+  await writeAudit(ctx, 'stock_movement', movement.id, 'CREATE', {
+    kind: 'OUT',
+    reserveId: reserve.id,
+    qty: reserve.qty,
+  });
+
+  const level = await tx.stockLevel.findUniqueOrThrow({ where: { id: locked.id } });
+  return { movement, level };
+}
+
 export const stockService = {
   // ----- Locations -----
 
