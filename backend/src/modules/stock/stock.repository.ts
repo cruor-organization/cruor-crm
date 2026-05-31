@@ -228,9 +228,10 @@ export const stockRepository = {
   },
 
   /**
-   * Reservas (RESERVE) de um ref (ex.: ORDER/orderId) ainda NÃO libertadas.
-   * Convenção de RELEASE: `reason = "released:<reserveId>"`. Diferença em JS
-   * (não precisa de FOR UPDATE — o lock acontece no releaseWithinTx).
+   * Reservas (RESERVE) de um ref (ex.: ORDER/orderId) ainda ATIVAS — sem `RELEASE`
+   * nem `OUT` correspondente. Convenções: RELEASE `reason="released:<id>"`,
+   * OUT de expedição `reason="shipped:<id>"`. Diferença em JS (o lock é feito
+   * no release/ship WithinTx).
    */
   async findActiveReservesForRef(
     tx: Prisma.TransactionClient,
@@ -238,19 +239,19 @@ export const stockRepository = {
     refType: StockMovementRefType,
     refId: string,
   ): Promise<StockMovement[]> {
-    const [reserves, releases] = await Promise.all([
+    const [reserves, consumers] = await Promise.all([
       tx.stockMovement.findMany({
         where: { organizationId, kind: 'RESERVE', refType, refId },
       }),
       tx.stockMovement.findMany({
-        where: { organizationId, kind: 'RELEASE', refType, refId },
+        where: { organizationId, kind: { in: ['RELEASE', 'OUT'] }, refType, refId },
       }),
     ]);
-    const released = new Set(
-      releases
-        .map((r) => r.reason?.replace('released:', ''))
+    const consumed = new Set(
+      consumers
+        .map((r) => r.reason?.replace(/^(released|shipped):/, ''))
         .filter((id): id is string => Boolean(id)),
     );
-    return reserves.filter((r) => !released.has(r.id));
+    return reserves.filter((r) => !consumed.has(r.id));
   },
 };
