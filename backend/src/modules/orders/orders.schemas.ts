@@ -16,6 +16,8 @@ export const OrderStatusEnum = z.enum([
   'REPLACED',
 ]);
 
+export const ShipmentCarrierEnum = z.enum(['CTT', 'DPD', 'CHRONOPOST', 'OTHER']);
+
 /** Linha de input: variant + qty, com override de preço opcional (validado contra floor). */
 export const orderLineInputSchema = z
   .object({
@@ -68,8 +70,23 @@ export const transitionOrderSchema = z
   .object({
     to: OrderStatusEnum,
     reason: z.string().max(500).optional(),
+    shipment: z
+      .object({
+        carrier: ShipmentCarrierEnum,
+        trackingCode: z.string().min(1).max(120),
+      })
+      .strict()
+      .optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((v, ctx) => {
+    if (v.to === 'SHIPPED' && !v.shipment) {
+      ctx.addIssue({ code: 'custom', message: 'SHIPMENT_REQUIRED', path: ['shipment'] });
+    }
+    if (v.to !== 'SHIPPED' && v.shipment) {
+      ctx.addIssue({ code: 'custom', message: 'SHIPMENT_NOT_ALLOWED', path: ['shipment'] });
+    }
+  });
 
 export type OrderLineInput = z.infer<typeof orderLineInputSchema>;
 export type TransitionOrderInput = z.infer<typeof transitionOrderSchema>;
