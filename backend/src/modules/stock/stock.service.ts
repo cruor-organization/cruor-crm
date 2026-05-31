@@ -26,6 +26,131 @@ import type {
   UpdateStockLocationInput,
 } from './stock.schemas.js';
 
+export interface ReserveWithinTxInput {
+  variantId: string;
+  locationId: string;
+  qty: number;
+  refType: StockMovement['refType'];
+  refId: string;
+}
+
+/**
+ * Reserva atómica DENTRO de uma transação existente (§10.13 few-shot 1).
+ * Caller é responsável por validar variant/location antes de abrir a tx.
+ */
+export async function reserveWithinTx(
+  tx: Prisma.TransactionClient,
+  ctx: AuthContext,
+  input: ReserveWithinTxInput,
+): Promise<{ movement: StockMovement; level: StockLevel }> {
+  await stockRepository.ensureLevel(tx, ctx.orgId, input.variantId, input.locationId);
+  const [locked] = await stockRepository.lockLevelForUpdate(
+    tx,
+    ctx.orgId,
+    input.variantId,
+    input.locationId,
+  );
+  if (!locked) throw new NotFoundError('STOCK_LEVEL_NOT_FOUND');
+  if (locked.available < input.qty) {
+    throw new ConflictError('INSUFFICIENT_STOCK', 'Stock insuficiente para reservar.', {
+      requested: input.qty,
+      available: locked.available,
+    });
+  }
+
+  await tx.stockLevel.update({
+    where: { id: locked.id },
+    data: {
+      available: { decrement: input.qty },
+      reserved: { increment: input.qty },
+    },
+  });
+
+  const movement = await tx.stockMovement.create({
+    data: {
+      organizationId: ctx.orgId,
+      variantId: input.variantId,
+      locationId: input.locationId,
+      kind: 'RESERVE',
+      qty: input.qty,
+      refType: input.refType,
+      refId: input.refId,
+      actorId: ctx.actorId,
+    },
+  });
+
+  await writeAudit(ctx, 'stock_movement', movement.id, 'CREATE', {
+    kind: 'RESERVE',
+    qty: input.qty,
+    refType: input.refType,
+    refId: input.refId,
+  });
+
+  const level = await tx.stockLevel.findUniqueOrThrow({ where: { id: locked.id } });
+  return { movement, level };
+}
+
+/**
+ * Liberta UMA reserva DENTRO de uma transação existente. Idempotente por
+ * convenção: `reason = "released:<reserveId>"`. Caller passa o movimento RESERVE
+ * já validado (kind === 'RESERVE').
+ */
+export async function releaseWithinTx(
+  tx: Prisma.TransactionClient,
+  ctx: AuthContext,
+  reserve: StockMovement,
+): Promise<{ movement: StockMovement; level: StockLevel }> {
+  const existing = await stockRepository.findReleaseForReserve(tx, ctx.orgId, reserve.id);
+  if (existing.length > 0) {
+    throw new ConflictError('RESERVATION_ALREADY_RELEASED');
+  }
+
+  const [locked] = await stockRepository.lockLevelForUpdate(
+    tx,
+    ctx.orgId,
+    reserve.variantId,
+    reserve.locationId,
+  );
+  if (!locked) throw new NotFoundError('STOCK_LEVEL_NOT_FOUND');
+  if (locked.reserved < reserve.qty) {
+    throw new ConflictError('RESERVATION_INCONSISTENT', 'Reserved < qty da reserva.', {
+      reserved: locked.reserved,
+      required: reserve.qty,
+    });
+  }
+
+  await tx.stockLevel.update({
+    where: { id: locked.id },
+    data: {
+      available: { increment: reserve.qty },
+      reserved: { decrement: reserve.qty },
+    },
+  });
+
+  const movement = await tx.stockMovement.create({
+    data: {
+      organizationId: ctx.orgId,
+      variantId: reserve.variantId,
+      locationId: reserve.locationId,
+      kind: 'RELEASE',
+      qty: reserve.qty,
+      refType: reserve.refType,
+      refId: reserve.refId,
+      reason: `released:${reserve.id}`,
+      actorId: ctx.actorId,
+    },
+  });
+
+  await writeAudit(ctx, 'stock_movement', movement.id, 'CREATE', {
+    kind: 'RELEASE',
+    reserveId: reserve.id,
+    qty: reserve.qty,
+  });
+
+  const level = await tx.stockLevel.findUniqueOrThrow({ where: { id: locked.id } });
+  return { movement, level };
+}
+
 export const stockService = {
   // ----- Locations -----
 
@@ -181,54 +306,15 @@ export const stockService = {
     input: ReserveStockInput,
   ): Promise<{ movement: StockMovement; level: StockLevel }> {
     await assertVariantAndLocation(ctx, input.variantId, input.locationId);
-
-    return prisma.$transaction(async (tx) => {
-      await stockRepository.ensureLevel(tx, ctx.orgId, input.variantId, input.locationId);
-      const [locked] = await stockRepository.lockLevelForUpdate(
-        tx,
-        ctx.orgId,
-        input.variantId,
-        input.locationId,
-      );
-      if (!locked) throw new NotFoundError('STOCK_LEVEL_NOT_FOUND');
-      if (locked.available < input.qty) {
-        throw new ConflictError('INSUFFICIENT_STOCK', 'Stock insuficiente para reservar.', {
-          requested: input.qty,
-          available: locked.available,
-        });
-      }
-
-      await tx.stockLevel.update({
-        where: { id: locked.id },
-        data: {
-          available: { decrement: input.qty },
-          reserved: { increment: input.qty },
-        },
-      });
-
-      const movement = await tx.stockMovement.create({
-        data: {
-          organizationId: ctx.orgId,
-          variantId: input.variantId,
-          locationId: input.locationId,
-          kind: 'RESERVE',
-          qty: input.qty,
-          refType: input.refType,
-          refId: input.refId,
-          actorId: ctx.actorId,
-        },
-      });
-
-      await writeAudit(ctx, 'stock_movement', movement.id, 'CREATE', {
-        kind: 'RESERVE',
+    return prisma.$transaction((tx) =>
+      reserveWithinTx(tx, ctx, {
+        variantId: input.variantId,
+        locationId: input.locationId,
         qty: input.qty,
         refType: input.refType,
         refId: input.refId,
-      });
-
-      const level = await tx.stockLevel.findUniqueOrThrow({ where: { id: locked.id } });
-      return { movement, level };
-    });
+      }),
+    );
   },
 
   /**
@@ -246,62 +332,7 @@ export const stockService = {
         'Apenas movimentos kind=RESERVE podem ser libertados.',
       );
     }
-
-    return prisma.$transaction(async (tx) => {
-      const existing = await stockRepository.findReleaseForReserve(
-        tx,
-        ctx.orgId,
-        reserveMovementId,
-      );
-      if (existing.length > 0) {
-        throw new ConflictError('RESERVATION_ALREADY_RELEASED');
-      }
-
-      const [locked] = await stockRepository.lockLevelForUpdate(
-        tx,
-        ctx.orgId,
-        reserve.variantId,
-        reserve.locationId,
-      );
-      if (!locked) throw new NotFoundError('STOCK_LEVEL_NOT_FOUND');
-      if (locked.reserved < reserve.qty) {
-        throw new ConflictError('RESERVATION_INCONSISTENT', 'Reserved < qty da reserva.', {
-          reserved: locked.reserved,
-          required: reserve.qty,
-        });
-      }
-
-      await tx.stockLevel.update({
-        where: { id: locked.id },
-        data: {
-          available: { increment: reserve.qty },
-          reserved: { decrement: reserve.qty },
-        },
-      });
-
-      const movement = await tx.stockMovement.create({
-        data: {
-          organizationId: ctx.orgId,
-          variantId: reserve.variantId,
-          locationId: reserve.locationId,
-          kind: 'RELEASE',
-          qty: reserve.qty,
-          refType: reserve.refType,
-          refId: reserve.refId,
-          reason: `released:${reserveMovementId}`,
-          actorId: ctx.actorId,
-        },
-      });
-
-      await writeAudit(ctx, 'stock_movement', movement.id, 'CREATE', {
-        kind: 'RELEASE',
-        reserveId: reserveMovementId,
-        qty: reserve.qty,
-      });
-
-      const level = await tx.stockLevel.findUniqueOrThrow({ where: { id: locked.id } });
-      return { movement, level };
-    });
+    return prisma.$transaction((tx) => releaseWithinTx(tx, ctx, reserve));
   },
 
   /**
