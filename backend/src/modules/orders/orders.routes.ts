@@ -21,6 +21,8 @@ export function ordersRouter(): Router {
   router.patch('/:id', requireRole(...SALES), asyncHandler(ordersController.update));
   router.delete('/:id', requireRole(...SALES), asyncHandler(ordersController.remove));
 
+  router.patch('/:id/status', requireRole(...SALES), asyncHandler(ordersController.transition));
+
   router.post('/:id/lines', requireRole(...SALES), asyncHandler(ordersController.addLine));
   router.patch(
     '/:id/lines/:lineId',
