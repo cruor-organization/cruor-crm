@@ -7,6 +7,7 @@ import {
   addOrderLineSchema,
   createOrderSchema,
   listOrdersQuerySchema,
+  transitionOrderSchema,
   updateOrderLineSchema,
   updateOrderSchema,
 } from './orders.schemas.js';
@@ -59,5 +60,11 @@ export const ordersController = {
   async deleteLine(req: Request, res: Response): Promise<void> {
     const ctx = getCtx(req);
     res.json(await ordersService.deleteLine(ctx, req.params.id ?? '', req.params.lineId ?? ''));
+  },
+
+  async transition(req: Request, res: Response): Promise<void> {
+    const ctx = getCtx(req);
+    const input = transitionOrderSchema.parse(req.body);
+    res.json(await ordersService.transition(ctx, req.params.id ?? '', input));
   },
 };
