@@ -5,7 +5,13 @@
  * Reservas usam `tx.$queryRaw` tagged template (auto-parametrizado, satisfaz
  * §9 "zero $queryRawUnsafe") para SELECT … FOR UPDATE.
  */
-import type { Prisma, StockLevel, StockLocation, StockMovement } from '@prisma/client';
+import type {
+  Prisma,
+  StockLevel,
+  StockLocation,
+  StockMovement,
+  StockMovementRefType,
+} from '@prisma/client';
 
 import { prisma } from '../../db/index.js';
 
@@ -212,5 +218,39 @@ export const stockRepository = {
         AND "reason" = ${`released:${reserveId}`}
       LIMIT 1
     `;
+  },
+
+  /** Armazém default e ativo da org (para reservar encomendas). */
+  findDefaultLocation(organizationId: string): Promise<StockLocation | null> {
+    return prisma.stockLocation.findFirst({
+      where: { organizationId, isDefault: true, active: true },
+    });
+  },
+
+  /**
+   * Reservas (RESERVE) de um ref (ex.: ORDER/orderId) ainda NÃO libertadas.
+   * Convenção de RELEASE: `reason = "released:<reserveId>"`. Diferença em JS
+   * (não precisa de FOR UPDATE — o lock acontece no releaseWithinTx).
+   */
+  async findActiveReservesForRef(
+    tx: Prisma.TransactionClient,
+    organizationId: string,
+    refType: StockMovementRefType,
+    refId: string,
+  ): Promise<StockMovement[]> {
+    const [reserves, releases] = await Promise.all([
+      tx.stockMovement.findMany({
+        where: { organizationId, kind: 'RESERVE', refType, refId },
+      }),
+      tx.stockMovement.findMany({
+        where: { organizationId, kind: 'RELEASE', refType, refId },
+      }),
+    ]);
+    const released = new Set(
+      releases
+        .map((r) => r.reason?.replace('released:', ''))
+        .filter((id): id is string => Boolean(id)),
+    );
+    return reserves.filter((r) => !released.has(r.id));
   },
 };
