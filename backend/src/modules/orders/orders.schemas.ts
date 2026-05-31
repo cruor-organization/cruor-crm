@@ -64,7 +64,15 @@ export const listOrdersQuerySchema = z
   })
   .strict();
 
+export const transitionOrderSchema = z
+  .object({
+    to: OrderStatusEnum,
+    reason: z.string().max(500).optional(),
+  })
+  .strict();
+
 export type OrderLineInput = z.infer<typeof orderLineInputSchema>;
+export type TransitionOrderInput = z.infer<typeof transitionOrderSchema>;
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 export type UpdateOrderInput = z.infer<typeof updateOrderSchema>;
 export type AddOrderLineInput = z.infer<typeof addOrderLineSchema>;
