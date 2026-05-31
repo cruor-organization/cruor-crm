@@ -27,7 +27,7 @@ import { hasAnyRole } from '../../shared/rbac.js';
 import { writeAudit } from '../audit/audit.service.js';
 import { pricingService } from '../pricing/pricing.service.js';
 import { stockRepository } from '../stock/stock.repository.js';
-import { releaseWithinTx, reserveWithinTx } from '../stock/stock.service.js';
+import { releaseWithinTx, reserveWithinTx, shipReserveWithinTx } from '../stock/stock.service.js';
 
 import { ordersRepository, type OrderWithLines } from './orders.repository.js';
 import type {
@@ -236,10 +236,25 @@ export const ordersService = {
     await prisma.$transaction(async (tx) => {
       if (input.to === 'CONFIRMED') {
         await reserveOrderLines(tx, ctx, order);
-      } else if (input.to === 'CANCELLED' && order.status === 'CONFIRMED') {
+      } else if (input.to === 'SHIPPED') {
+        await shipOrderReserves(tx, ctx, order.id);
+      } else if (input.to === 'CANCELLED') {
         await releaseOrderReserves(tx, ctx, order.id);
       }
-      await tx.customerOrder.update({ where: { id }, data: { status: input.to } });
+      await tx.customerOrder.update({
+        where: { id },
+        data: {
+          status: input.to,
+          ...(input.to === 'SHIPPED' && input.shipment
+            ? {
+                carrier: input.shipment.carrier,
+                trackingCode: input.shipment.trackingCode,
+                shippedAt: new Date(),
+              }
+            : {}),
+          ...(input.to === 'DELIVERED' ? { deliveredAt: new Date() } : {}),
+        },
+      });
       await tx.orderStatusHistory.create({
         data: {
           organizationId: ctx.orgId,
@@ -416,6 +431,17 @@ async function releaseOrderReserves(
   const reserves = await stockRepository.findActiveReservesForRef(tx, ctx.orgId, 'ORDER', orderId);
   for (const reserve of reserves) {
     await releaseWithinTx(tx, ctx, reserve);
+  }
+}
+
+async function shipOrderReserves(
+  tx: Prisma.TransactionClient,
+  ctx: AuthContext,
+  orderId: string,
+): Promise<void> {
+  const reserves = await stockRepository.findActiveReservesForRef(tx, ctx.orgId, 'ORDER', orderId);
+  for (const reserve of reserves) {
+    await shipReserveWithinTx(tx, ctx, reserve);
   }
 }
 
