@@ -907,6 +907,13 @@ enum OrderStatus {
   REPLACED
 }
 
+enum ShipmentCarrier {
+  CTT
+  DPD
+  CHRONOPOST
+  OTHER
+}
+
 model CustomerOrder {
   id                    String      @id @default(cuid())
   organizationId        String
@@ -921,6 +928,10 @@ model CustomerOrder {
   notes                 String?
   requestedDeliveryDate DateTime?
   shippingAddress       Json?
+  carrier               ShipmentCarrier?
+  trackingCode          String?
+  shippedAt             DateTime?
+  deliveredAt           DateTime?
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
 
