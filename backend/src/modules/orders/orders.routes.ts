@@ -7,6 +7,7 @@ import { requireAuth, requireRole } from '../../middlewares/auth-context.js';
 import { ordersController } from './orders.controller.js';
 
 const SALES = ['SALES_REP', 'SALES_MANAGER', 'ADMIN', 'OWNER'] as const;
+const STATUS_ROLES = [...SALES, 'WAREHOUSE'] as const;
 
 export function ordersRouter(): Router {
   const router = Router();
@@ -21,7 +22,11 @@ export function ordersRouter(): Router {
   router.patch('/:id', requireRole(...SALES), asyncHandler(ordersController.update));
   router.delete('/:id', requireRole(...SALES), asyncHandler(ordersController.remove));
 
-  router.patch('/:id/status', requireRole(...SALES), asyncHandler(ordersController.transition));
+  router.patch(
+    '/:id/status',
+    requireRole(...STATUS_ROLES),
+    asyncHandler(ordersController.transition),
+  );
 
   router.post('/:id/lines', requireRole(...SALES), asyncHandler(ordersController.addLine));
   router.patch(
