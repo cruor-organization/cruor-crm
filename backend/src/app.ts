@@ -23,6 +23,7 @@ import { leadsRouter } from './modules/leads/leads.routes.js';
 import { ordersRouter } from './modules/orders/orders.routes.js';
 import { pricingRouter } from './modules/pricing/pricing.routes.js';
 import { productsRouter } from './modules/products/products.routes.js';
+import { quotesRouter } from './modules/quotes/quotes.routes.js';
 import { returnsRouter } from './modules/returns/returns.routes.js';
 import { stockRouter } from './modules/stock/stock.routes.js';
 import { suppliersRouter } from './modules/suppliers/suppliers.routes.js';
@@ -99,6 +100,7 @@ export function createApp(env: Env): CreatedApp {
   app.use('/api/leads', leadsRouter());
   app.use('/api/orders', ordersRouter());
   app.use('/api/products', productsRouter());
+  app.use('/api/quotes', quotesRouter());
   app.use('/api/returns', returnsRouter());
   app.use('/api/stock', stockRouter());
   app.use('/api/pricing', pricingRouter());
