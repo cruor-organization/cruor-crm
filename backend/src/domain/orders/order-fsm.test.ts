@@ -34,15 +34,25 @@ describe('isValidOrderTransition (núcleo + fulfilment)', () => {
     expect(isValidOrderTransition('DELIVERED', 'CANCELLED')).toBe(false);
   });
 
-  it('rejeita devoluções (fatia futura)', () => {
-    expect(isValidOrderTransition('SHIPPED', 'RETURN_REQUESTED')).toBe(false);
-    expect(isValidOrderTransition('DELIVERED', 'RETURN_REQUESTED')).toBe(false);
-    expect(isValidOrderTransition('RETURN_REQUESTED', 'RETURN_RECEIVED')).toBe(false);
+  it('aceita o caminho de devolução', () => {
+    expect(isValidOrderTransition('SHIPPED', 'RETURN_REQUESTED')).toBe(true);
+    expect(isValidOrderTransition('DELIVERED', 'RETURN_REQUESTED')).toBe(true);
+    expect(isValidOrderTransition('RETURN_REQUESTED', 'RETURN_RECEIVED')).toBe(true);
+    expect(isValidOrderTransition('RETURN_RECEIVED', 'REFUNDED')).toBe(true);
+    expect(isValidOrderTransition('RETURN_RECEIVED', 'REPLACED')).toBe(true);
+  });
+
+  it('rejeita saltos inválidos no caminho de devolução', () => {
+    expect(isValidOrderTransition('SHIPPED', 'RETURN_RECEIVED')).toBe(false);
+    expect(isValidOrderTransition('RETURN_REQUESTED', 'REFUNDED')).toBe(false);
+    expect(isValidOrderTransition('DELIVERED', 'REFUNDED')).toBe(false);
   });
 
   it('estados terminais não permitem nada', () => {
     expect(isValidOrderTransition('CANCELLED', 'DRAFT')).toBe(false);
     expect(isValidOrderTransition('DELIVERED', 'DRAFT')).toBe(false);
+    expect(isValidOrderTransition('REFUNDED', 'DRAFT')).toBe(false);
+    expect(isValidOrderTransition('REPLACED', 'RETURN_REQUESTED')).toBe(false);
   });
 });
 

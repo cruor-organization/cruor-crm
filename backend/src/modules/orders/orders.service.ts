@@ -13,7 +13,7 @@
 import type { Prisma } from '@prisma/client';
 
 import { prisma, PrismaNamespace } from '../../db/index.js';
-import { assertTransition } from '../../domain/orders/order-fsm.js';
+import { assertTransition, type OrderStatus } from '../../domain/orders/order-fsm.js';
 import { buildOrderNumber } from '../../domain/orders/order-number.js';
 import { recomputeTotals } from '../../domain/orders/recompute-totals.js';
 import type { AuthContext } from '../../middlewares/auth-context.js';
@@ -42,6 +42,14 @@ import type {
 /** IVA snapshot da fatia 1. TODO(orders): IVA intracomunitário / isenção art.14 — fatia futura. */
 const ORDER_VAT_PCT = 23;
 const ORDER_NUMBER_MAX_ATTEMPTS = 5;
+
+/** Destinos cuja transição só o returnsService honra (acoplam efeito de stock). */
+const RETURN_PATH_STATUSES = new Set<TransitionOrderInput['to']>([
+  'RETURN_REQUESTED',
+  'RETURN_RECEIVED',
+  'REFUNDED',
+  'REPLACED',
+]);
 
 export interface ResolvedLine {
   variantId: string;
@@ -231,6 +239,16 @@ export const ordersService = {
     input: TransitionOrderInput,
   ): Promise<OrderWithLines> {
     const order = await this.getById(ctx, id);
+    // Os destinos do caminho de devolução são honrados pelo returnsService (que
+    // acopla o efeito de stock RETURN→quarentena). Bloquear aqui mantém a
+    // invariante "transição válida ≡ transição honrada" para o PATCH cru.
+    if (RETURN_PATH_STATUSES.has(input.to)) {
+      throw new ValidationError(
+        'ORDER_RETURN_VIA_RETURNS_MODULE',
+        'Transições de devolução são feitas via /api/returns.',
+        { to: input.to },
+      );
+    }
     assertTransition(order.status, input.to);
 
     await prisma.$transaction(async (tx) => {
@@ -443,6 +461,33 @@ async function shipOrderReserves(
   for (const reserve of reserves) {
     await shipReserveWithinTx(tx, ctx, reserve);
   }
+}
+
+/**
+ * Espelha o estado da encomenda durante uma transição de devolução, DENTRO de uma
+ * transação existente. Usado só pelo returnsService — o efeito de stock vive lá; aqui
+ * só se valida a aresta (assertTransition) e se regista o histórico. Mantém a FSM da
+ * encomenda como fonte única de verdade das transições válidas.
+ */
+export async function mirrorOrderStatusWithinTx(
+  tx: Prisma.TransactionClient,
+  ctx: AuthContext,
+  order: { id: string; status: OrderStatus },
+  to: OrderStatus,
+  reason?: string,
+): Promise<void> {
+  assertTransition(order.status, to);
+  await tx.customerOrder.update({ where: { id: order.id }, data: { status: to } });
+  await tx.orderStatusHistory.create({
+    data: {
+      organizationId: ctx.orgId,
+      orderId: order.id,
+      fromStatus: order.status,
+      toStatus: to,
+      actorId: ctx.actorId,
+      ...(reason !== undefined ? { reason } : {}),
+    },
+  });
 }
 
 function jsonOrNull(

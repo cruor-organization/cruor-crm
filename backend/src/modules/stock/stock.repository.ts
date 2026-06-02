@@ -227,6 +227,16 @@ export const stockRepository = {
     });
   },
 
+  /** Armazém de quarentena ativo da org (para receber devoluções, §10.18). */
+  findQuarantineLocation(
+    client: Prisma.TransactionClient | typeof prisma,
+    organizationId: string,
+  ): Promise<StockLocation | null> {
+    return client.stockLocation.findFirst({
+      where: { organizationId, isQuarantine: true, active: true },
+    });
+  },
+
   /**
    * Reservas (RESERVE) de um ref (ex.: ORDER/orderId) ainda ATIVAS — sem `RELEASE`
    * nem `OUT` correspondente. Convenções: RELEASE `reason="released:<id>"`,

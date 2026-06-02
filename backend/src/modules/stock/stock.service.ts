@@ -204,6 +204,201 @@ export async function shipReserveWithinTx(
   return { movement, level };
 }
 
+/**
+ * Recebe uma devolução em quarentena DENTRO de uma transação existente (§10.18).
+ * `kind=RETURN` incrementa `available` na location de quarentena — NUNCA no armazém
+ * vendável. Caller (returnsService) valida variant/location antes da tx.
+ * Convenção: `reason="return:<returnId>"`.
+ */
+export async function receiveReturnWithinTx(
+  tx: Prisma.TransactionClient,
+  ctx: AuthContext,
+  input: { variantId: string; locationId: string; qty: number; refId: string },
+): Promise<{ movement: StockMovement; level: StockLevel }> {
+  await stockRepository.ensureLevel(tx, ctx.orgId, input.variantId, input.locationId);
+  const [locked] = await stockRepository.lockLevelForUpdate(
+    tx,
+    ctx.orgId,
+    input.variantId,
+    input.locationId,
+  );
+  if (!locked) throw new NotFoundError('STOCK_LEVEL_NOT_FOUND');
+
+  await tx.stockLevel.update({
+    where: { id: locked.id },
+    data: { available: { increment: input.qty } },
+  });
+
+  const movement = await tx.stockMovement.create({
+    data: {
+      organizationId: ctx.orgId,
+      variantId: input.variantId,
+      locationId: input.locationId,
+      kind: 'RETURN',
+      qty: input.qty,
+      refType: 'RETURN_DOC',
+      refId: input.refId,
+      reason: `return:${input.refId}`,
+      actorId: ctx.actorId,
+    },
+  });
+
+  await writeAudit(ctx, 'stock_movement', movement.id, 'CREATE', {
+    kind: 'RETURN',
+    qty: input.qty,
+    refId: input.refId,
+  });
+
+  const level = await tx.stockLevel.findUniqueOrThrow({ where: { id: locked.id } });
+  return { movement, level };
+}
+
+/**
+ * Repõe stock devolvido: move `available` da quarentena para o armazém vendável
+ * (TRANSFER_OUT + TRANSFER_IN) DENTRO de uma transação existente. Lock ordenado por
+ * `locationId` (anti-deadlock, igual a `transfer`). Convenção: `reason="restock:return:<id>"`.
+ */
+export async function restockFromQuarantineWithinTx(
+  tx: Prisma.TransactionClient,
+  ctx: AuthContext,
+  input: { variantId: string; fromLocationId: string; toLocationId: string; qty: number; refId: string },
+): Promise<{ out: StockMovement; in: StockMovement }> {
+  const firstId =
+    input.fromLocationId < input.toLocationId ? input.fromLocationId : input.toLocationId;
+  const secondId =
+    input.fromLocationId < input.toLocationId ? input.toLocationId : input.fromLocationId;
+
+  await stockRepository.ensureLevel(tx, ctx.orgId, input.variantId, firstId);
+  await stockRepository.ensureLevel(tx, ctx.orgId, input.variantId, secondId);
+
+  const [firstLocked] = await stockRepository.lockLevelForUpdate(
+    tx,
+    ctx.orgId,
+    input.variantId,
+    firstId,
+  );
+  const [secondLocked] = await stockRepository.lockLevelForUpdate(
+    tx,
+    ctx.orgId,
+    input.variantId,
+    secondId,
+  );
+  if (!firstLocked || !secondLocked) throw new NotFoundError('STOCK_LEVEL_NOT_FOUND');
+
+  const isFromFirst = input.fromLocationId === firstId;
+  const fromLocked = isFromFirst ? firstLocked : secondLocked;
+  const toLocked = isFromFirst ? secondLocked : firstLocked;
+
+  if (fromLocked.available < input.qty) {
+    throw new ConflictError('INSUFFICIENT_STOCK', 'Stock insuficiente na quarentena.', {
+      requested: input.qty,
+      available: fromLocked.available,
+    });
+  }
+
+  await tx.stockLevel.update({
+    where: { id: fromLocked.id },
+    data: { available: { decrement: input.qty } },
+  });
+  await tx.stockLevel.update({
+    where: { id: toLocked.id },
+    data: { available: { increment: input.qty } },
+  });
+
+  const out = await tx.stockMovement.create({
+    data: {
+      organizationId: ctx.orgId,
+      variantId: input.variantId,
+      locationId: input.fromLocationId,
+      kind: 'TRANSFER_OUT',
+      qty: input.qty,
+      refType: 'RETURN_DOC',
+      refId: input.refId,
+      reason: `restock:return:${input.refId}`,
+      actorId: ctx.actorId,
+    },
+  });
+  const movementIn = await tx.stockMovement.create({
+    data: {
+      organizationId: ctx.orgId,
+      variantId: input.variantId,
+      locationId: input.toLocationId,
+      kind: 'TRANSFER_IN',
+      qty: input.qty,
+      refType: 'RETURN_DOC',
+      refId: input.refId,
+      reason: `restock:return:${input.refId}`,
+      actorId: ctx.actorId,
+    },
+  });
+
+  await writeAudit(ctx, 'stock_movement', out.id, 'CREATE', {
+    kind: 'TRANSFER_OUT',
+    qty: input.qty,
+    refId: input.refId,
+  });
+  await writeAudit(ctx, 'stock_movement', movementIn.id, 'CREATE', {
+    kind: 'TRANSFER_IN',
+    qty: input.qty,
+    refId: input.refId,
+  });
+
+  return { out, in: movementIn };
+}
+
+/**
+ * Descarta stock devolvido: `OUT` da quarentena DENTRO de uma transação existente
+ * (sai do inventário, §10.18). Convenção: `reason="scrap:return:<id>"`.
+ */
+export async function scrapFromQuarantineWithinTx(
+  tx: Prisma.TransactionClient,
+  ctx: AuthContext,
+  input: { variantId: string; locationId: string; qty: number; refId: string },
+): Promise<{ movement: StockMovement; level: StockLevel }> {
+  const [locked] = await stockRepository.lockLevelForUpdate(
+    tx,
+    ctx.orgId,
+    input.variantId,
+    input.locationId,
+  );
+  if (!locked) throw new NotFoundError('STOCK_LEVEL_NOT_FOUND');
+  if (locked.available < input.qty) {
+    throw new ConflictError('INSUFFICIENT_STOCK', 'Stock insuficiente na quarentena.', {
+      requested: input.qty,
+      available: locked.available,
+    });
+  }
+
+  await tx.stockLevel.update({
+    where: { id: locked.id },
+    data: { available: { decrement: input.qty } },
+  });
+
+  const movement = await tx.stockMovement.create({
+    data: {
+      organizationId: ctx.orgId,
+      variantId: input.variantId,
+      locationId: input.locationId,
+      kind: 'OUT',
+      qty: input.qty,
+      refType: 'RETURN_DOC',
+      refId: input.refId,
+      reason: `scrap:return:${input.refId}`,
+      actorId: ctx.actorId,
+    },
+  });
+
+  await writeAudit(ctx, 'stock_movement', movement.id, 'CREATE', {
+    kind: 'OUT',
+    qty: input.qty,
+    refId: input.refId,
+    scrap: true,
+  });
+
+  const level = await tx.stockLevel.findUniqueOrThrow({ where: { id: locked.id } });
+  return { movement, level };
+}
+
 export const stockService = {
   // ----- Locations -----
 
@@ -235,6 +430,7 @@ export const stockService = {
       name: input.name,
       country: input.country,
       isDefault: input.isDefault,
+      isQuarantine: input.isQuarantine,
       active: input.active,
     });
     await writeAudit(ctx, 'stock_location', location.id, 'CREATE', {

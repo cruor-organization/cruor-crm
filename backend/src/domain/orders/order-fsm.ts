@@ -2,9 +2,11 @@
 /**
  * FSM de CustomerOrder (§7.4, §10.14 few-shot 3).
  *
- * Caminho núcleo + fulfilment já honrado (CONFIRMED→PICKING→PACKED→SHIPPED→DELIVERED).
- * As devoluções (RETURN_REQUESTED, RETURN_RECEIVED, REFUNDED, REPLACED) entram
- * na fatia seguinte, juntamente com os respetivos efeitos de stock.
+ * Caminho núcleo + fulfilment + devoluções todos honrados
+ * (CONFIRMED→PICKING→PACKED→SHIPPED→DELIVERED; SHIPPED|DELIVERED→RETURN_REQUESTED→
+ * RETURN_RECEIVED→REFUNDED|REPLACED). As arestas de devolução só são despoletadas
+ * pelo returnsService (espelho do Return), nunca por um PATCH de status cru — assim
+ * o efeito de stock (RETURN→quarentena, restock/scrap) acompanha sempre a transição.
  * NÃO adicionar uma aresta sem adicionar o handler de efeito correspondente.
  * Invariante: "transição válida ≡ transição honrada".
  */
@@ -30,9 +32,13 @@ const ORDER_TRANSITIONS: Partial<Record<OrderStatus, OrderStatus[]>> = {
   CONFIRMED: ['PICKING', 'CANCELLED'],
   PICKING: ['PACKED', 'CANCELLED'],
   PACKED: ['SHIPPED', 'CANCELLED'],
-  SHIPPED: ['DELIVERED'], // RETURN_REQUESTED entra na fatia de devoluções, com o efeito RETURN
-  DELIVERED: [], // idem
+  SHIPPED: ['DELIVERED', 'RETURN_REQUESTED'],
+  DELIVERED: ['RETURN_REQUESTED'],
   CANCELLED: [],
+  RETURN_REQUESTED: ['RETURN_RECEIVED'],
+  RETURN_RECEIVED: ['REFUNDED', 'REPLACED'],
+  REFUNDED: [],
+  REPLACED: [],
 };
 
 export function isValidOrderTransition(from: OrderStatus, to: OrderStatus): boolean {

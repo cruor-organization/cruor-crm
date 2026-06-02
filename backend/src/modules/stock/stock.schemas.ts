@@ -30,6 +30,7 @@ export const createStockLocationSchema = z
     name: z.string().min(2).max(120),
     country: z.string().length(2).toUpperCase(),
     isDefault: z.boolean().default(false),
+    isQuarantine: z.boolean().default(false),
     active: z.boolean().default(true),
   })
   .strict();
