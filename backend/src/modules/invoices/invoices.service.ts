@@ -133,49 +133,68 @@ export const invoicesService = {
   async issue(ctx: AuthContext, invoiceId: string, provider: InvoiceProviderPort) {
     const invoice = await prisma.invoice.findFirst({
       where: { id: invoiceId, organizationId: ctx.orgId },
-      select: { id: true, status: true, totalEur: true, currency: true },
+      select: { id: true, status: true, number: true, totalEur: true, currency: true },
     });
     if (!invoice) throw new NotFoundError('INVOICE_NOT_FOUND');
     if (invoice.status !== 'PENDING') return this.getById(ctx, invoiceId);
     assertInvoiceTransition('PENDING', 'ISSUED');
 
-    const year = new Date().getUTCFullYear();
-    let lastErr: unknown;
-    for (let attempt = 0; attempt < INVOICE_NUMBER_MAX_ATTEMPTS; attempt++) {
-      const count = await invoicesRepository.countInvoicesForYear(ctx.orgId, year);
-      const number = buildInvoiceNumber(year, count + 1 + attempt);
-      const { externalId, raw } = await provider.issue({
-        invoiceId: invoice.id,
-        number,
-        totalEur: Number(invoice.totalEur),
-        currency: invoice.currency,
-      });
-      try {
-        await prisma.invoice.update({
-          where: { id: invoice.id },
-          data: {
-            status: 'ISSUED',
-            number,
-            externalId,
-            provider: provider.name,
-            raw: raw as Prisma.InputJsonValue,
-            issuedAt: new Date(),
-          },
-        });
-        await writeAudit(ctx, 'invoice', invoice.id, 'STATUS_CHANGE', { to: 'ISSUED', number });
-        return this.getById(ctx, invoiceId);
-      } catch (err) {
-        if (isUniqueViolation(err)) {
-          lastErr = err;
-          continue;
+    // 1) Reservar o número fiscal ANTES de chamar o provider — assim o provider é
+    //    chamado exatamente uma vez (uma colisão de número não pode reemitir o
+    //    documento externo). Reutiliza o número se uma emissão anterior já o reservou.
+    // TODO(invoices): numeração sem lacunas (SAFT-PT) exige advisory lock / tabela de
+    //   sequência por (org, ano) sob concorrência — endurecer antes do provider real (Fase 4).
+    let number = invoice.number;
+    if (!number) {
+      const year = new Date().getUTCFullYear();
+      let lastErr: unknown;
+      for (let attempt = 0; attempt < INVOICE_NUMBER_MAX_ATTEMPTS; attempt++) {
+        const count = await invoicesRepository.countInvoicesForYear(ctx.orgId, year);
+        const candidate = buildInvoiceNumber(year, count + 1 + attempt);
+        try {
+          await prisma.invoice.update({
+            where: { id: invoice.id, organizationId: ctx.orgId },
+            data: { number: candidate },
+          });
+          number = candidate;
+          break;
+        } catch (err) {
+          if (isUniqueViolation(err)) {
+            lastErr = err;
+            continue;
+          }
+          throw err;
         }
-        throw err;
+      }
+      if (!number) {
+        throw new ConflictError('INVOICE_NUMBER_COLLISION', 'Falha a gerar número único.', {
+          attempts: INVOICE_NUMBER_MAX_ATTEMPTS,
+          cause: String(lastErr),
+        });
       }
     }
-    throw new ConflictError('INVOICE_NUMBER_COLLISION', 'Falha a gerar número único.', {
-      attempts: INVOICE_NUMBER_MAX_ATTEMPTS,
-      cause: String(lastErr),
+
+    // 2) Emitir no provider exatamente uma vez, com o número já reservado.
+    const { externalId, raw } = await provider.issue({
+      invoiceId: invoice.id,
+      number,
+      totalEur: Number(invoice.totalEur),
+      currency: invoice.currency,
     });
+
+    // 3) Confirmar a emissão.
+    await prisma.invoice.update({
+      where: { id: invoice.id, organizationId: ctx.orgId },
+      data: {
+        status: 'ISSUED',
+        externalId,
+        provider: provider.name,
+        raw: raw as Prisma.InputJsonValue,
+        issuedAt: new Date(),
+      },
+    });
+    await writeAudit(ctx, 'invoice', invoice.id, 'STATUS_CHANGE', { to: 'ISSUED', number });
+    return this.getById(ctx, invoiceId);
   },
 
   /** Regista um pagamento manual; marca PAID quando cobre o total. */
@@ -227,7 +246,10 @@ export const invoicesService = {
     });
     if (!invoice) throw new NotFoundError('INVOICE_NOT_FOUND');
     assertInvoiceTransition(invoice.status, 'VOID');
-    await prisma.invoice.update({ where: { id: invoice.id }, data: { status: 'VOID' } });
+    await prisma.invoice.update({
+      where: { id: invoice.id, organizationId: ctx.orgId },
+      data: { status: 'VOID' },
+    });
     await writeAudit(ctx, 'invoice', invoice.id, 'STATUS_CHANGE', { to: 'VOID' });
     return this.getById(ctx, invoiceId);
   },
