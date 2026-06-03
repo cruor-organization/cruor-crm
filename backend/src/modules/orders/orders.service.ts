@@ -13,6 +13,7 @@
 import type { Prisma } from '@prisma/client';
 
 import { prisma, PrismaNamespace } from '../../db/index.js';
+import { assertCreditAvailable } from '../../domain/invoices/credit.js';
 import { assertTransition, type OrderStatus } from '../../domain/orders/order-fsm.js';
 import { buildOrderNumber } from '../../domain/orders/order-number.js';
 import { recomputeTotals } from '../../domain/orders/recompute-totals.js';
@@ -25,7 +26,6 @@ import {
   ValidationError,
 } from '../../shared/errors.js';
 import { hasAnyRole } from '../../shared/rbac.js';
-import { assertCreditAvailable } from '../../domain/invoices/credit.js';
 import { writeAudit } from '../audit/audit.service.js';
 import type { InvoiceProviderPort } from '../invoices/invoice-provider.port.js';
 import { invoicesRepository } from '../invoices/invoices.repository.js';
@@ -335,7 +335,7 @@ export const ordersService = {
         where: { id, organizationId: ctx.orgId },
         select: { invoice: { select: { id: true, status: true } } },
       });
-      if (orderForInvoice?.invoice && orderForInvoice.invoice.status === 'PENDING') {
+      if (orderForInvoice?.invoice?.status === 'PENDING') {
         try {
           await invoicesService.issue(ctx, orderForInvoice.invoice.id, getInvoiceProvider());
         } catch (err) {
