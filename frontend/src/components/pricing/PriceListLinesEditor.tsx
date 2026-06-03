@@ -1,57 +1,80 @@
 /**
  * Editor inline de linhas de uma lista de preços.
- * Todas as mutações são simuladas (console.info + toast via alert).
+ * Mutações via /api/pricing/lists/:id/lines e /api/pricing/lines/:lineId.
  */
-import { Trash2, Plus } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
 import { Field, inputCls } from '@/components/ui/Field';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
-import { mockVariants, type MockPriceListLine, type DiscountBreak } from '@/lib/mock-data/pricing';
+import { api, type ApiError } from '@/lib/api';
+
+export interface PriceListLineApi {
+  id: string;
+  variantId: string;
+  unitPriceEur: string;
+  minQty: number;
+  discountBreaks: { minQty: number; discountPct: number }[];
+  variant: { id: string; sku: string; label: string; product: { name: string } };
+}
+
+interface VariantApi {
+  id: string;
+  sku: string;
+  label: string;
+  productId: string;
+  productName: string;
+  costEur: string | null;
+}
 
 interface PriceListLinesEditorProps {
   priceListId: string;
-  lines: MockPriceListLine[];
+  lines: PriceListLineApi[];
+  readOnly?: boolean;
+}
+
+interface DiscountBreak {
+  minQty: number;
+  discountPct: number;
 }
 
 function fmtPrice(v: number) {
   return v.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function variantLabel(variantId: string): string {
-  const v = mockVariants.find((x) => x.id === variantId);
-  return v ? `${v.productName} — ${v.name}` : variantId;
+function apiErrorMessage(err: unknown): string {
+  const e = err as ApiError | undefined;
+  return e?.message ?? 'Erro inesperado.';
 }
 
-function variantSku(variantId: string): string {
-  const v = mockVariants.find((x) => x.id === variantId);
-  return v ? v.sku : variantId;
-}
+// ---------- Modal de quebras ----------
 
-// Modal para editar discount breaks de uma linha
 function BreaksModal({
   open,
   onClose,
   breaks,
   onSave,
+  saving,
+  error,
 }: {
   open: boolean;
   onClose: () => void;
   breaks: DiscountBreak[];
   onSave: (breaks: DiscountBreak[]) => void;
+  saving: boolean;
+  error: string | null;
 }) {
   const [local, setLocal] = useState<DiscountBreak[]>(breaks);
 
   function addBreak() {
-    setLocal((prev) => [...prev, { minQty: 0, discountPct: 0 }]);
+    setLocal((prev) => [...prev, { minQty: 1, discountPct: 0 }]);
   }
-
   function removeBreak(idx: number) {
     setLocal((prev) => prev.filter((_, i) => i !== idx));
   }
-
   function updateBreak(idx: number, field: keyof DiscountBreak, value: string) {
     setLocal((prev) =>
       prev.map((b, i) =>
@@ -65,6 +88,9 @@ function BreaksModal({
   return (
     <Modal open={open} onClose={onClose} title="Quebras de desconto" size="md">
       <div className="space-y-3">
+        {error && (
+          <div className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">{error}</div>
+        )}
         {local.length === 0 && <p className="text-sm text-neutral-500">Sem quebras definidas.</p>}
         {local.map((b, i) => (
           <div key={i} className="flex items-center gap-2">
@@ -112,16 +138,11 @@ function BreaksModal({
           Adicionar quebra
         </Button>
 
-        <div className="flex justify-end gap-2 border-t pt-3 mt-3">
+        <div className="mt-3 flex justify-end gap-2 border-t pt-3">
           <Button variant="secondary" onClick={onClose}>
             Cancelar
           </Button>
-          <Button
-            onClick={() => {
-              onSave(local);
-              onClose();
-            }}
-          >
+          <Button loading={saving} onClick={() => onSave(local)}>
             Guardar
           </Button>
         </div>
@@ -130,48 +151,59 @@ function BreaksModal({
   );
 }
 
-// Linha da tabela — editável
+// ---------- LineRow ----------
+
 function LineRow({
   line,
-  onDelete,
-  onSave,
+  priceListId,
+  readOnly,
 }: {
-  line: MockPriceListLine;
-  onDelete: () => void;
-  onSave: (updated: MockPriceListLine) => void;
+  line: PriceListLineApi;
+  priceListId: string;
+  readOnly: boolean;
 }) {
+  const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [price, setPrice] = useState(String(line.unitPriceEur));
   const [minQty, setMinQty] = useState(String(line.minQty));
   const [breaksOpen, setBreaksOpen] = useState(false);
-  const [breaks, setBreaks] = useState<DiscountBreak[]>(line.discountBreaks);
+
+  const invalidate = () =>
+    qc.invalidateQueries({ queryKey: ['priceListLines', priceListId] });
+
+  const updateLine = useMutation({
+    mutationFn: (data: { unitPriceEur?: number; minQty?: number; discountBreaks?: DiscountBreak[] }) =>
+      api.patch(`/api/pricing/lines/${line.id}`, data),
+    onSuccess: invalidate,
+  });
+
+  const deleteLine = useMutation({
+    mutationFn: () => api.delete(`/api/pricing/lines/${line.id}`),
+    onSuccess: invalidate,
+  });
 
   function handleSave() {
-    const updated: MockPriceListLine = {
-      ...line,
-      unitPriceEur: parseFloat(price),
-      minQty: parseInt(minQty, 10),
-      discountBreaks: breaks,
-    };
-    console.info('[PriceListLine] guardar linha', updated);
-    onSave(updated);
-    setEditing(false);
-    alert('Linha guardada (simulação).');
+    updateLine.mutate(
+      {
+        unitPriceEur: parseFloat(price),
+        minQty: parseInt(minQty, 10),
+      },
+      { onSuccess: () => setEditing(false) },
+    );
   }
 
   function handleDelete() {
     if (!confirm('Remover esta linha?')) return;
-    console.info('[PriceListLine] remover linha', line.id);
-    onDelete();
+    deleteLine.mutate();
   }
 
   return (
     <>
       <tr className="divide-x divide-neutral-100 hover:bg-neutral-50">
-        <td className="px-3 py-2 font-mono text-xs text-neutral-500">
-          {variantSku(line.variantId)}
+        <td className="px-3 py-2 font-mono text-xs text-neutral-500">{line.variant.sku}</td>
+        <td className="px-3 py-2 text-sm text-neutral-800">
+          {line.variant.product.name} — {line.variant.label}
         </td>
-        <td className="px-3 py-2 text-sm text-neutral-800">{variantLabel(line.variantId)}</td>
         <td className="px-3 py-2 text-right">
           {editing ? (
             <input
@@ -183,7 +215,7 @@ function LineRow({
               onChange={(e) => setPrice(e.target.value)}
             />
           ) : (
-            <span className="text-sm">{fmtPrice(line.unitPriceEur)} €</span>
+            <span className="text-sm">{fmtPrice(Number(line.unitPriceEur))} €</span>
           )}
         </td>
         <td className="px-3 py-2 text-right">
@@ -200,17 +232,29 @@ function LineRow({
           )}
         </td>
         <td className="px-3 py-2 text-center">
-          <Button variant="ghost" size="sm" onClick={() => setBreaksOpen(true)}>
-            {breaks.length === 0
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={readOnly}
+            onClick={() => setBreaksOpen(true)}
+          >
+            {line.discountBreaks.length === 0
               ? 'Sem quebras'
-              : `${breaks.length} quebra${breaks.length > 1 ? 's' : ''}`}
+              : `${line.discountBreaks.length} quebra${line.discountBreaks.length > 1 ? 's' : ''}`}
           </Button>
         </td>
         <td className="px-3 py-2">
           <div className="flex justify-end gap-1">
-            {editing ? (
+            {readOnly ? (
+              <span className="text-xs italic text-neutral-400">lista arquivada</span>
+            ) : editing ? (
               <>
-                <Button variant="primary" size="sm" onClick={handleSave}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={updateLine.isPending}
+                  onClick={handleSave}
+                >
                   Guardar
                 </Button>
                 <Button variant="secondary" size="sm" onClick={() => setEditing(false)}>
@@ -227,47 +271,72 @@ function LineRow({
                   className="rounded p-1.5 text-neutral-400 hover:bg-red-50 hover:text-red-600"
                   onClick={handleDelete}
                   title="Remover linha"
+                  disabled={deleteLine.isPending}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </>
             )}
           </div>
+          {(updateLine.error || deleteLine.error) && (
+            <p className="mt-1 text-right text-xs text-red-600">
+              {apiErrorMessage(updateLine.error ?? deleteLine.error)}
+            </p>
+          )}
         </td>
       </tr>
 
       <BreaksModal
         open={breaksOpen}
         onClose={() => setBreaksOpen(false)}
-        breaks={breaks}
-        onSave={(newBreaks) => {
-          setBreaks(newBreaks);
-          console.info('[PriceListLine] breaks actualizados', newBreaks);
-        }}
+        breaks={line.discountBreaks}
+        saving={updateLine.isPending}
+        error={updateLine.error ? apiErrorMessage(updateLine.error) : null}
+        onSave={(newBreaks) =>
+          updateLine.mutate(
+            { discountBreaks: newBreaks },
+            { onSuccess: () => setBreaksOpen(false) },
+          )
+        }
       />
     </>
   );
 }
 
-// Formulário de nova linha
+// ---------- AddLineRow ----------
+
 function AddLineRow({
   priceListId,
-  onAdd,
+  variants,
+  onDone,
 }: {
   priceListId: string;
-  onAdd: (line: MockPriceListLine) => void;
+  variants: VariantApi[];
+  onDone: () => void;
 }) {
+  const qc = useQueryClient();
   const [variantId, setVariantId] = useState('');
   const [price, setPrice] = useState('');
   const [minQty, setMinQty] = useState('1');
   const [error, setError] = useState('');
 
-  const variantOptions = mockVariants.map((v) => ({
+  const variantOptions = variants.map((v) => ({
     value: v.id,
-    label: `${v.sku} — ${v.productName} (${v.name})`,
+    label: `${v.sku} — ${v.productName} (${v.label})`,
   }));
 
+  const createLine = useMutation({
+    mutationFn: (data: { variantId: string; unitPriceEur: number; minQty: number }) =>
+      api.post(`/api/pricing/lists/${priceListId}/lines`, data),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['priceListLines', priceListId] });
+      onDone();
+    },
+    onError: (err: unknown) => setError(apiErrorMessage(err)),
+  });
+
   function handleAdd() {
+    setError('');
     if (!variantId || !price) {
       setError('Variante e preço são obrigatórios.');
       return;
@@ -277,24 +346,11 @@ function AddLineRow({
       setError('Preço inválido.');
       return;
     }
-    const newLine: MockPriceListLine = {
-      id: `pll-new-${Date.now()}`,
-      organizationId: 'org-demo-01',
-      priceListId,
+    createLine.mutate({
       variantId,
       unitPriceEur: unitPrice,
       minQty: parseInt(minQty, 10) || 1,
-      discountBreaks: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    console.info('[PriceListLine] adicionar linha', newLine);
-    onAdd(newLine);
-    setVariantId('');
-    setPrice('');
-    setMinQty('1');
-    setError('');
-    alert('Linha adicionada (simulação).');
+    });
   }
 
   return (
@@ -331,7 +387,7 @@ function AddLineRow({
       </td>
       <td className="px-3 py-2" />
       <td className="px-3 py-2">
-        <Button variant="primary" size="sm" onClick={handleAdd}>
+        <Button variant="primary" size="sm" loading={createLine.isPending} onClick={handleAdd}>
           Adicionar
         </Button>
       </td>
@@ -339,25 +395,16 @@ function AddLineRow({
   );
 }
 
-export function PriceListLinesEditor({
-  priceListId,
-  lines: initialLines,
-}: PriceListLinesEditorProps) {
-  const [lines, setLines] = useState<MockPriceListLine[]>(initialLines);
+// ---------- Editor principal ----------
+
+export function PriceListLinesEditor({ priceListId, lines, readOnly = false }: PriceListLinesEditorProps) {
   const [showAddRow, setShowAddRow] = useState(false);
 
-  function handleDelete(id: string) {
-    setLines((prev) => prev.filter((l) => l.id !== id));
-  }
-
-  function handleSave(updated: MockPriceListLine) {
-    setLines((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
-  }
-
-  function handleAdd(newLine: MockPriceListLine) {
-    setLines((prev) => [...prev, newLine]);
-    setShowAddRow(false);
-  }
+  const variantsQuery = useQuery({
+    queryKey: ['pricing', 'variants'],
+    queryFn: () => api.get<{ items: VariantApi[] }>('/api/products/variants?take=200'),
+    enabled: showAddRow,
+  });
 
   return (
     <div className="space-y-3">
@@ -378,15 +425,22 @@ export function PriceListLinesEditor({
               <LineRow
                 key={line.id}
                 line={line}
-                onDelete={() => handleDelete(line.id)}
-                onSave={handleSave}
+                priceListId={priceListId}
+                readOnly={readOnly}
               />
             ))}
-            {showAddRow && <AddLineRow priceListId={priceListId} onAdd={handleAdd} />}
+            {showAddRow && !readOnly && (
+              <AddLineRow
+                priceListId={priceListId}
+                variants={variantsQuery.data?.items ?? []}
+                onDone={() => setShowAddRow(false)}
+              />
+            )}
             {lines.length === 0 && !showAddRow && (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-sm text-neutral-500">
-                  Sem linhas de preço. Clica em "Adicionar linha".
+                  Sem linhas de preço.{' '}
+                  {readOnly ? 'Lista arquivada.' : 'Clica em "Adicionar linha".'}
                 </td>
               </tr>
             )}
@@ -394,7 +448,7 @@ export function PriceListLinesEditor({
         </table>
       </div>
 
-      {!showAddRow && (
+      {!showAddRow && !readOnly && (
         <Button
           variant="secondary"
           size="sm"
