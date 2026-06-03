@@ -2,6 +2,9 @@
 node_modules
 .pnpm-store
 
+# Repositório não relacionado, clonado por engano dentro da árvore
+gammad/
+
 # Build outputs
 dist
 build
