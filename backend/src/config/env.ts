@@ -26,6 +26,10 @@ const envSchema = z.object({
     .default('false')
     .transform((v) => v === 'true'),
   ALIBABA_SYNC_INTERVAL_MS: z.coerce.number().int().min(30000).default(300000),
+
+  // Provider de faturação (§10.14). mock por defeito; real (Moloni/InvoiceXpress)
+  // é decisão da Fase 4.
+  INVOICE_PROVIDER: z.enum(['mock', 'moloni', 'invoicexpress']).default('mock'),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -41,6 +45,7 @@ const RELEVANT_KEYS = [
   'ALIBABA_API_MODE',
   'ALIBABA_SYNC_ENABLED',
   'ALIBABA_SYNC_INTERVAL_MS',
+  'INVOICE_PROVIDER',
 ] as const;
 
 export function loadEnv(input: NodeJS.ProcessEnv = process.env): Env {

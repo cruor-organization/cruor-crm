@@ -34,6 +34,7 @@ const env = {
   ALIBABA_API_MODE: 'mock' as const,
   ALIBABA_SYNC_ENABLED: false,
   ALIBABA_SYNC_INTERVAL_MS: 300000,
+  INVOICE_PROVIDER: 'mock' as const,
 };
 
 describe('GET /healthz', () => {
