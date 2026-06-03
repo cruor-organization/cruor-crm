@@ -26,7 +26,9 @@ import {
 import { hasAnyRole } from '../../shared/rbac.js';
 import { assertCreditAvailable } from '../../domain/invoices/credit.js';
 import { writeAudit } from '../audit/audit.service.js';
+import type { InvoiceProviderPort } from '../invoices/invoice-provider.port.js';
 import { invoicesRepository } from '../invoices/invoices.repository.js';
+import { ensureInvoiceForOrderWithinTx, invoicesService } from '../invoices/invoices.service.js';
 import { pricingService } from '../pricing/pricing.service.js';
 import { stockRepository } from '../stock/stock.repository.js';
 import { releaseWithinTx, reserveWithinTx, shipReserveWithinTx } from '../stock/stock.service.js';
@@ -40,6 +42,18 @@ import type {
   UpdateOrderInput,
   UpdateOrderLineInput,
 } from './orders.schemas.js';
+
+// ----------------------------------------------------------------------------
+// Injeção do provider de faturação (evita dependência circular com createApp)
+// ----------------------------------------------------------------------------
+let invoiceProvider: InvoiceProviderPort | null = null;
+export function setInvoiceProvider(provider: InvoiceProviderPort): void {
+  invoiceProvider = provider;
+}
+function getInvoiceProvider(): InvoiceProviderPort {
+  if (!invoiceProvider) throw new Error('Invoice provider não inicializado.');
+  return invoiceProvider;
+}
 
 /** IVA snapshot da fatia 1. TODO(orders): IVA intracomunitário / isenção art.14 — fatia futura. */
 const ORDER_VAT_PCT = 23;
@@ -300,6 +314,9 @@ export const ordersService = {
           ...(input.reason !== undefined ? { reason: input.reason } : {}),
         },
       });
+      if (input.to === 'CONFIRMED' || input.to === 'SHIPPED') {
+        await ensureInvoiceForOrderWithinTx(tx, ctx, id, input.to);
+      }
     });
 
     await writeAudit(ctx, 'customer_order', id, 'STATUS_CHANGE', {
@@ -307,6 +324,20 @@ export const ordersService = {
       to: input.to,
       ...(input.reason !== undefined ? { reason: input.reason } : {}),
     });
+    if (input.to === 'CONFIRMED' || input.to === 'SHIPPED') {
+      const orderForInvoice = await prisma.customerOrder.findFirst({
+        where: { id, organizationId: ctx.orgId },
+        select: { invoice: { select: { id: true, status: true } } },
+      });
+      if (orderForInvoice?.invoice && orderForInvoice.invoice.status === 'PENDING') {
+        try {
+          await invoicesService.issue(ctx, orderForInvoice.invoice.id, getInvoiceProvider());
+        } catch (err) {
+          // Best-effort: a fatura fica PENDING e é re-emitível via POST /api/invoices/:id/issue.
+          console.error(`[invoices] emissão falhou para fatura ${orderForInvoice.invoice.id}:`, err);
+        }
+      }
+    }
     return this.getById(ctx, id);
   },
 };
