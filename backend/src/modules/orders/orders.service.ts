@@ -18,6 +18,7 @@ import { buildOrderNumber } from '../../domain/orders/order-number.js';
 import { recomputeTotals } from '../../domain/orders/recompute-totals.js';
 import type { AuthContext } from '../../middlewares/auth-context.js';
 import {
+  AppError,
   ConflictError,
   ForbiddenError,
   NotFoundError,
@@ -51,7 +52,9 @@ export function setInvoiceProvider(provider: InvoiceProviderPort): void {
   invoiceProvider = provider;
 }
 function getInvoiceProvider(): InvoiceProviderPort {
-  if (!invoiceProvider) throw new Error('Invoice provider não inicializado.');
+  if (!invoiceProvider) {
+    throw new AppError('INVOICE_PROVIDER_NOT_INITIALIZED', 'Invoice provider não inicializado.', 500);
+  }
   return invoiceProvider;
 }
 
@@ -134,6 +137,9 @@ export const ordersService = {
     assertNoDuplicateVariants(resolvedLines);
     const totals = recomputeTotals(resolvedLines);
 
+    // TODO(orders): getCreditUsed corre fora da tx de persistência — janela TOCTOU
+    //   pequena; mover para dentro com SELECT … FOR UPDATE no customer antes de
+    //   ativação fiscal real (consistente com a reserva de stock).
     const creditUsed = await invoicesRepository.getCreditUsed(ctx.orgId, customer.id);
     assertCreditAvailable(
       creditUsed,
