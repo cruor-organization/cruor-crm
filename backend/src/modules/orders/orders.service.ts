@@ -24,7 +24,9 @@ import {
   ValidationError,
 } from '../../shared/errors.js';
 import { hasAnyRole } from '../../shared/rbac.js';
+import { assertCreditAvailable } from '../../domain/invoices/credit.js';
 import { writeAudit } from '../audit/audit.service.js';
+import { invoicesRepository } from '../invoices/invoices.repository.js';
 import { pricingService } from '../pricing/pricing.service.js';
 import { stockRepository } from '../stock/stock.repository.js';
 import { releaseWithinTx, reserveWithinTx, shipReserveWithinTx } from '../stock/stock.service.js';
@@ -100,7 +102,13 @@ export const ordersService = {
   async create(ctx: AuthContext, input: CreateOrderInput): Promise<OrderWithLines> {
     const customer = await prisma.customer.findFirst({
       where: { id: input.customerId, organizationId: ctx.orgId, deletedAt: null },
-      select: { id: true, salesRepId: true, status: true },
+      select: {
+        id: true,
+        salesRepId: true,
+        status: true,
+        creditLimitEur: true,
+        paymentTermDays: true,
+      },
     });
     if (!customer) throw new NotFoundError('CUSTOMER_NOT_FOUND');
     if (ctx.role === 'SALES_REP' && customer.salesRepId !== ctx.actorId) {
@@ -111,6 +119,15 @@ export const ordersService = {
     const resolvedLines = await resolveLines(ctx, customer.id, input.lines ?? []);
     assertNoDuplicateVariants(resolvedLines);
     const totals = recomputeTotals(resolvedLines);
+
+    const creditUsed = await invoicesRepository.getCreditUsed(ctx.orgId, customer.id);
+    assertCreditAvailable(
+      creditUsed,
+      Number(totals.totalEur),
+      Number(customer.creditLimitEur),
+      input.paymentUpfront,
+    );
+
     const orderSalesRepId = customer.salesRepId ?? ctx.actorId;
 
     let lastErr: unknown;

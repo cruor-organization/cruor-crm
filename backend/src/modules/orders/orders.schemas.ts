@@ -30,6 +30,7 @@ export const orderLineInputSchema = z
 export const createOrderSchema = z
   .object({
     customerId: z.string().min(1),
+    paymentUpfront: z.boolean().default(false),
     notes: z.string().max(2000).optional(),
     requestedDeliveryDate: z.coerce.date().optional(),
     shippingAddress: z.record(z.unknown()).optional(),
