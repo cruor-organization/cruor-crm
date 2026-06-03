@@ -21,8 +21,11 @@ import { createAlibabaApi, type AlibabaApiPort } from './modules/alibaba/alibaba
 import { alibabaRouter } from './modules/alibaba/alibaba.routes.js';
 import { auditRouter } from './modules/audit/audit.routes.js';
 import { customersRouter } from './modules/customers/customers.routes.js';
+import { createInvoiceProvider } from './modules/invoices/invoice-provider.port.js';
+import { invoicesRouter } from './modules/invoices/invoices.routes.js';
 import { leadsRouter } from './modules/leads/leads.routes.js';
 import { ordersRouter } from './modules/orders/orders.routes.js';
+import { setInvoiceProvider } from './modules/orders/orders.service.js';
 import { pricingRouter } from './modules/pricing/pricing.routes.js';
 import { productsRouter } from './modules/products/products.routes.js';
 import { quotesRouter } from './modules/quotes/quotes.routes.js';
@@ -112,6 +115,10 @@ export function createApp(env: Env): CreatedApp {
 
   const alibabaApi = createAlibabaApi(env.ALIBABA_API_MODE);
   app.use('/api/alibaba', alibabaRouter(alibabaApi));
+
+  const invoiceProvider = createInvoiceProvider(env.INVOICE_PROVIDER);
+  setInvoiceProvider(invoiceProvider);
+  app.use('/api/invoices', invoicesRouter(invoiceProvider));
 
   app.use((_req, res) => {
     res.status(404).json({ code: 'NOT_FOUND', message: 'Rota não encontrada.' });
