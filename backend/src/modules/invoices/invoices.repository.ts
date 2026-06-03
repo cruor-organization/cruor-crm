@@ -53,14 +53,18 @@ export const invoicesRepository = {
    * + totais de encomendas comprometidas ainda sem fatura.
    */
   async getCreditUsed(organizationId: string, customerId: string): Promise<number> {
-    const issued = await prisma.invoice.findMany({
-      where: { organizationId, customerId, status: 'ISSUED' },
+    // Faturas em aberto: PENDING conta tanto quanto ISSUED — uma emissão best-effort
+    // que falhou deixa a fatura PENDING, mas a dívida existe na mesma. Excluí-la
+    // sub-contaria a exposição e deixaria passar encomendas acima do limite.
+    const open = await prisma.invoice.findMany({
+      where: { organizationId, customerId, status: { in: ['PENDING', 'ISSUED'] } },
       select: { totalEur: true, paidEur: true },
     });
-    const outstanding = issued.reduce(
+    const outstanding = open.reduce(
       (acc, i) => acc + (Number(i.totalEur) - Number(i.paidEur)),
       0,
     );
+    // Encomendas comprometidas ainda SEM fatura (disjunto do bloco acima).
     const committed = await prisma.customerOrder.findMany({
       where: {
         organizationId,
