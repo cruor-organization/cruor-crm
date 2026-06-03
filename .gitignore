@@ -55,6 +55,9 @@ ai-service/src/**/*.js.map
 # Playwright MCP output
 .playwright-mcp/
 
+# Projecto autónomo vizinho (tem o próprio .git, não pertence ao cruor)
+gammad/
+
 # Misc
 .cache
 *.tgz
