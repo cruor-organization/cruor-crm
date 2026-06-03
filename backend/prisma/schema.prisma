@@ -52,6 +52,7 @@ model User {
   stockMovementsActed  StockMovement[]        @relation("StockMovementActor")
   specialPricesCreated CustomerSpecialPrice[] @relation("SpecialPriceCreator")
   customerOrders       CustomerOrder[]        @relation("CustomerOrderSalesRep")
+  payments             Payment[]              @relation("PaymentActor")
 
   @@map("user")
 }
@@ -139,6 +140,7 @@ model Organization {
   returns               Return[]
   quotes                Quote[]
   alibabaOrders         AlibabaOrder[]
+  invoices              Invoice[]
 
   @@map("organization")
 }
@@ -332,6 +334,7 @@ model Customer {
   specialPrices      CustomerSpecialPrice[]
   orders             CustomerOrder[]
   quotes             Quote[]
+  invoices           Invoice[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -613,6 +616,7 @@ model ProductVariant {
   returnLines           ReturnLine[]
   quoteLines            QuoteLine[]
   alibabaItems          AlibabaOrderItem[]
+  invoiceLines          InvoiceLine[]
 
   @@unique([organizationId, sku])
   @@index([productId])
@@ -952,6 +956,7 @@ model CustomerOrder {
   lines        CustomerOrderLine[]
   history      OrderStatusHistory[]
   returns      Return[]
+  invoice      Invoice?
 
   @@unique([organizationId, orderNumber])
   @@index([organizationId, status])
@@ -1195,4 +1200,98 @@ model AlibabaOrderItem {
   @@unique([alibabaOrderId, variantId])
   @@index([organizationId, alibabaOrderId])
   @@map("alibaba_order_item")
+}
+
+// ----------------------------------------------------------------------------
+// Domínio Fase 3 — Faturação (§10.14)
+//
+// INVARIANTES: uma fatura por encomenda (orderId @unique); totais são snapshots
+// (imunes a alterações futuras de preço/encomenda); número fiscal sequencial por
+// org/ano atribuído na emissão; pagamentos nunca excedem o total em aberto.
+// ----------------------------------------------------------------------------
+
+enum InvoiceStatus {
+  PENDING
+  ISSUED
+  PAID
+  VOID
+}
+
+enum PaymentMethod {
+  TRANSFER
+  CARD
+  CASH
+  OTHER
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  organizationId String
+  orderId        String        @unique
+  customerId     String
+  status         InvoiceStatus @default(PENDING)
+  // Número fiscal FT-AAAA-NNNN — só existe a partir de ISSUED.
+  number         String?
+  // Referência do provider externo (mock: "mock-<id>"; real: id Moloni/InvoiceXpress).
+  externalId     String?
+  provider       String?
+  currency       String        @default("EUR") @db.Char(3)
+  subtotalEur    Decimal       @db.Decimal(14, 2)
+  vatEur         Decimal       @db.Decimal(14, 2)
+  totalEur       Decimal       @db.Decimal(14, 2)
+  paidEur        Decimal       @default(0) @db.Decimal(14, 2)
+  issuedAt       DateTime?
+  dueAt          DateTime?
+  raw            Json?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  order        CustomerOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  customer     Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  lines        InvoiceLine[]
+  payments     Payment[]
+
+  @@unique([organizationId, number])
+  @@index([organizationId, status])
+  @@index([organizationId, customerId])
+  @@map("invoice")
+}
+
+model InvoiceLine {
+  id             String   @id @default(cuid())
+  organizationId String
+  invoiceId      String
+  variantId      String
+  description    String
+  qty            Int
+  unitPriceEur   Decimal  @db.Decimal(12, 2)
+  discountPct    Decimal  @default(0) @db.Decimal(5, 4)
+  vatPct         Decimal  @default(0) @db.Decimal(5, 2)
+  lineTotalEur   Decimal  @db.Decimal(14, 2)
+  createdAt      DateTime @default(now())
+
+  invoice Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId, invoiceId])
+  @@map("invoice_line")
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  organizationId String
+  invoiceId      String
+  amountEur      Decimal       @db.Decimal(14, 2)
+  method         PaymentMethod @default(TRANSFER)
+  reference      String?
+  paidAt         DateTime      @default(now())
+  actorId        String?
+  createdAt      DateTime      @default(now())
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  actor   User?   @relation("PaymentActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, invoiceId])
+  @@map("payment")
 }
