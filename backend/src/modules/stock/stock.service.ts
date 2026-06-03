@@ -254,6 +254,64 @@ export async function receiveReturnWithinTx(
 }
 
 /**
+ * Aplica a chegada física de uma encomenda Alibaba ao stock (§10.12): cria
+ * `StockMovement IN` e incrementa `available` DENTRO de uma transação existente.
+ * Espelha `receiveReturnWithinTx`. Ancorado em `refType=PURCHASE/refId=<alibabaOrderId>`;
+ * a idempotência "exatamente uma vez" é garantida pelo caller (guarda
+ * `AlibabaOrder.stockAppliedAt` + gate * → DELIVERED), não por esta função.
+ */
+export async function applyPurchaseInWithinTx(
+  tx: Prisma.TransactionClient,
+  ctx: AuthContext,
+  input: {
+    variantId: string;
+    locationId: string;
+    qty: number;
+    refId: string;
+    batch?: string | null;
+  },
+): Promise<{ movement: StockMovement; level: StockLevel }> {
+  await stockRepository.ensureLevel(tx, ctx.orgId, input.variantId, input.locationId);
+  const [locked] = await stockRepository.lockLevelForUpdate(
+    tx,
+    ctx.orgId,
+    input.variantId,
+    input.locationId,
+  );
+  if (!locked) throw new NotFoundError('STOCK_LEVEL_NOT_FOUND');
+
+  await tx.stockLevel.update({
+    where: { id: locked.id },
+    data: { available: { increment: input.qty } },
+  });
+
+  const movement = await tx.stockMovement.create({
+    data: {
+      organizationId: ctx.orgId,
+      variantId: input.variantId,
+      locationId: input.locationId,
+      kind: 'IN',
+      qty: input.qty,
+      refType: 'PURCHASE',
+      refId: input.refId,
+      batch: input.batch ?? null,
+      reason: `alibaba:${input.refId}`,
+      actorId: ctx.actorId,
+    },
+  });
+
+  await writeAudit(ctx, 'stock_movement', movement.id, 'CREATE', {
+    kind: 'IN',
+    qty: input.qty,
+    refType: 'PURCHASE',
+    refId: input.refId,
+  });
+
+  const level = await tx.stockLevel.findUniqueOrThrow({ where: { id: locked.id } });
+  return { movement, level };
+}
+
+/**
  * Repõe stock devolvido: move `available` da quarentena para o armazém vendável
  * (TRANSFER_OUT + TRANSFER_IN) DENTRO de uma transação existente. Lock ordenado por
  * `locationId` (anti-deadlock, igual a `transfer`). Convenção: `reason="restock:return:<id>"`.

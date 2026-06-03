@@ -31,6 +31,9 @@ const env = {
   BETTER_AUTH_SECRET: 'x'.repeat(40),
   BETTER_AUTH_URL: 'http://localhost:3001',
   FRONTEND_URL: 'http://localhost:5173',
+  ALIBABA_API_MODE: 'mock' as const,
+  ALIBABA_SYNC_ENABLED: false,
+  ALIBABA_SYNC_INTERVAL_MS: 300000,
 };
 
 describe('GET /healthz', () => {

@@ -138,6 +138,7 @@ model Organization {
   customerOrders        CustomerOrder[]
   returns               Return[]
   quotes                Quote[]
+  alibabaOrders         AlibabaOrder[]
 
   @@map("organization")
 }
@@ -224,8 +225,9 @@ model Supplier {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  products     Product[]
+  organization  Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  products      Product[]
+  alibabaOrders AlibabaOrder[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -610,6 +612,7 @@ model ProductVariant {
   orderLines            CustomerOrderLine[]
   returnLines           ReturnLine[]
   quoteLines            QuoteLine[]
+  alibabaItems          AlibabaOrderItem[]
 
   @@unique([organizationId, sku])
   @@index([productId])
@@ -753,9 +756,10 @@ model StockLocation {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   stockLevels    StockLevel[]
   stockMovements StockMovement[]
+  alibabaItems   AlibabaOrderItem[]
 
   @@unique([organizationId, code])
   @@index([organizationId, active])
@@ -922,16 +926,16 @@ enum ShipmentCarrier {
 }
 
 model CustomerOrder {
-  id                    String      @id @default(cuid())
+  id                    String           @id @default(cuid())
   organizationId        String
   orderNumber           String
   customerId            String
   salesRepId            String?
-  status                OrderStatus @default(DRAFT)
-  currency              String      @default("EUR") @db.Char(3)
-  subtotalEur           Decimal     @default(0) @db.Decimal(14, 2)
-  vatEur                Decimal     @default(0) @db.Decimal(14, 2)
-  totalEur              Decimal     @default(0) @db.Decimal(14, 2)
+  status                OrderStatus      @default(DRAFT)
+  currency              String           @default("EUR") @db.Char(3)
+  subtotalEur           Decimal          @default(0) @db.Decimal(14, 2)
+  vatEur                Decimal          @default(0) @db.Decimal(14, 2)
+  totalEur              Decimal          @default(0) @db.Decimal(14, 2)
   notes                 String?
   requestedDeliveryDate DateTime?
   shippingAddress       Json?
@@ -939,8 +943,8 @@ model CustomerOrder {
   trackingCode          String?
   shippedAt             DateTime?
   deliveredAt           DateTime?
-  createdAt             DateTime    @default(now())
-  updatedAt             DateTime    @updatedAt
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
 
   organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   customer     Customer             @relation(fields: [customerId], references: [id], onDelete: Restrict)
@@ -1123,4 +1127,72 @@ model QuoteLine {
   @@unique([quoteId, variantId])
   @@index([organizationId, quoteId])
   @@map("quote_line")
+}
+
+// ----------------------------------------------------------------------------
+// Domínio Fase 3 — Encomendas Alibaba → Stock (§10.12)
+//
+// Importação de stock upstream. INVARIANTE: stock incrementado EXATAMENTE uma
+// vez por encomenda, no gate de transição * → DELIVERED. A guarda `stockAppliedAt`
+// (preenchida na 1ª aplicação) torna o sync idempotente mesmo com polls repetidos
+// ou corrida entre poller e endpoint manual.
+// ----------------------------------------------------------------------------
+
+enum AlibabaOrderStatus {
+  PLACED
+  CONFIRMED
+  SHIPPED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+model AlibabaOrder {
+  id              String             @id @default(cuid())
+  organizationId  String
+  // ID no lado da Alibaba — fonte de verdade para idempotência (upsert por externalId).
+  externalId      String
+  supplierId      String?
+  status          AlibabaOrderStatus @default(PLACED)
+  currency        String?            @db.Char(3)
+  placedAt        DateTime?
+  expectedArrival DateTime?
+  deliveredAt     DateTime?
+  // Preenchido quando os StockMovement IN são criados. NULL = stock ainda não aplicado.
+  stockAppliedAt  DateTime?
+  // Payload bruto do último sync (debug). Sem PII de pessoas; sem máscara necessária.
+  raw             Json?
+  lastSyncedAt    DateTime           @default(now())
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  supplier     Supplier?          @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  items        AlibabaOrderItem[]
+
+  @@unique([organizationId, externalId])
+  @@index([organizationId, status])
+  @@map("alibaba_order")
+}
+
+model AlibabaOrderItem {
+  id             String   @id @default(cuid())
+  organizationId String
+  alibabaOrderId String
+  variantId      String
+  // Armazém de destino do IN. Se NULL, o serviço usa a location default da org.
+  locationId     String?
+  qty            Int
+  unitCostEur    Decimal? @db.Decimal(12, 2)
+  batch          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  order    AlibabaOrder   @relation(fields: [alibabaOrderId], references: [id], onDelete: Cascade)
+  variant  ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  location StockLocation? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+
+  @@unique([alibabaOrderId, variantId])
+  @@index([organizationId, alibabaOrderId])
+  @@map("alibaba_order_item")
 }

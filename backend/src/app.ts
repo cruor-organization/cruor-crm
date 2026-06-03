@@ -17,6 +17,8 @@ import { createLogger } from './logger.js';
 import { attachAuthContext } from './middlewares/auth-context.js';
 import { errorHandler } from './middlewares/error.js';
 import { requestId, REQUEST_ID_HEADER } from './middlewares/request-id.js';
+import { createAlibabaApi, type AlibabaApiPort } from './modules/alibaba/alibaba-api.port.js';
+import { alibabaRouter } from './modules/alibaba/alibaba.routes.js';
 import { auditRouter } from './modules/audit/audit.routes.js';
 import { customersRouter } from './modules/customers/customers.routes.js';
 import { leadsRouter } from './modules/leads/leads.routes.js';
@@ -33,6 +35,8 @@ import { meRouter } from './routes/me.js';
 export interface CreatedApp {
   app: Express;
   auth: Auth;
+  /** Adapter da API Alibaba (mock|live), exposto para o poller em index.ts. */
+  alibabaApi: AlibabaApiPort;
 }
 
 export function createApp(env: Env): CreatedApp {
@@ -106,10 +110,13 @@ export function createApp(env: Env): CreatedApp {
   app.use('/api/pricing', pricingRouter());
   app.use('/api/audit', auditRouter());
 
+  const alibabaApi = createAlibabaApi(env.ALIBABA_API_MODE);
+  app.use('/api/alibaba', alibabaRouter(alibabaApi));
+
   app.use((_req, res) => {
     res.status(404).json({ code: 'NOT_FOUND', message: 'Rota não encontrada.' });
   });
   app.use(errorHandler());
 
-  return { app, auth };
+  return { app, auth, alibabaApi };
 }
