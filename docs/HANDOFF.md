@@ -1,6 +1,6 @@
 # Handoff — estado do projeto
 
-Última atualização: **2026-05-11**.
+Última atualização: **2026-06-10**.
 
 Doc vivo para retomar o trabalho noutra sessão (potencialmente noutro agente Claude). Mantém-no atualizado quando passares uma fase.
 
@@ -8,10 +8,20 @@ Doc vivo para retomar o trabalho noutra sessão (potencialmente noutro agente Cl
 
 ## TL;DR
 
-- **Fase 0 (Bootstrap) e Fase 1 (Núcleo Comercial) entregues e validadas em runtime real.**
-- **Phase gate ativo**: Fase 2 (Stock & Pricing) **não** deve começar sem confirmação explícita ao agente.
-- **Nada está commitado ainda.** O working tree tem ~80 ficheiros prontos para entrar num primeiro lote de commits Conventional Commits.
+- **Fases 0–3 entregues e commitadas.** Fase 4 (Conteúdo & IA) em curso — **slice 1
+  (Fundação RAG + Chatbot texto) entregue** nesta sessão (§10.8). Ver o changelog em
+  [02-remaining-work.md](./02-remaining-work.md) (sessão 2026-06-10).
+- **Phase gate ativo**: os slices seguintes da Fase 4 (reuniões+Fathom, AI vision,
+  similaridade visual, tools de escrita/DRAFT) **não** devem começar sem confirmação.
+- **Desvio §0 registado:** o LLM do chatbot é **OpenAI**, não Claude — [ADR-0003](./decisions/0003-openai-para-chatbot-llm.md).
+  Embeddings mantêm-se OpenAI `text-embedding-3-small`. Provider tem modo `mock` (CI/E2E
+  sem keys) e `live` atrás de `AI_PROVIDER`.
 - Stack standalone em 3 pastas (`backend/`, `frontend/`, `ai-service/`) — sem pnpm workspace, sem Turborepo. Deviação consciente do `prompt.md` §4; razão em [ADR-0002](./decisions/0002-layout-3-pastas-standalone.md).
+- **Nota de ambiente:** só o Node **v24.16.0** está instalado no nvm (o `.nvmrc` fixa 20,
+  mas o 20/22 não estão presentes); os engines `<23` dão só warning. O shim
+  `node_modules/.bin/*` pode não ter bit de execução — invocar binários via
+  `node node_modules/<pkg>/...`. Se os tipos do Express "partirem" no ai-service, é
+  linkagem pnpm stale: `CI=1 pnpm install --config.confirmModulesPurge=false`.
 
 ---
 
@@ -204,7 +214,26 @@ Podes agrupar 1–4 num só "chore: bootstrap repo layout" se preferires menos c
 
 ---
 
-## Próxima fase (Phase 2 — Stock & Pricing)
+## Próxima fase (Fase 4 — slices restantes)
+
+> Esta secção descrevia originalmente a Fase 2; mantida abaixo por referência
+> histórica. As Fases 2 e 3 estão concluídas. O próximo trabalho são os slices
+> restantes da Fase 4 (cada um atrás do phase gate):
+>
+> - **Slice 2 — Reuniões + Fathom** (§10.6): modelo `Meeting`, webhook HMAC +
+>   idempotência, auto-link a `Customer`/`CustomerActivity`, embeddings de
+>   transcript (`sourceType=MEETING`). **Reavaliar Redis/BullMQ aqui** (transcripts
+>   são grandes; a ingestão de produtos do slice 1 ficou síncrona de propósito).
+> - **Slice 3 — AI vision** (§10.4): análise de fotos de produto + embeddings
+>   visuais (`PRODUCT_VISUAL`) → desbloqueia `findVisuallySimilarProducts`.
+>   Pré-requisito de segurança: validação SSRF do `photoUrl` (allowlist + bloqueio
+>   de IPs privados, §9).
+> - **Slice 4 — Tools de escrita** (§10.8): `draftQuoteForCustomer` (DRAFT only,
+>   confirmação na UI) + `getMetric`, `suggestSeasonalCatalog`, `recommendSubstitute`.
+>
+> ---
+>
+> ### Histórico (Fase 2, já concluída)
 
 Spec em `prompt.md` §10.13 (stock) e §10.15 (pricing). Resumo:
 
