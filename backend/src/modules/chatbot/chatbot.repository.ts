@@ -23,9 +23,9 @@ export const chatbotRepository = {
     });
   },
 
-  getConversation(organizationId: string, id: string) {
+  getConversation(organizationId: string, id: string, userId: string) {
     return prisma.conversation.findFirst({
-      where: { id, organizationId },
+      where: { id, organizationId, userId },
       select: { id: true, title: true, userId: true, createdAt: true, updatedAt: true },
     });
   },

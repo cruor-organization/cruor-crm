@@ -78,7 +78,7 @@ export function chatbotRouter(deps: ChatbotDeps): Router {
     '/conversations/:id',
     asyncHandler(async (req, res) => {
       const ctx = getCtx(req);
-      const conv = await chatbotRepository.getConversation(ctx.orgId, req.params.id ?? '');
+      const conv = await chatbotRepository.getConversation(ctx.orgId, req.params.id ?? '', ctx.actorId);
       if (!conv) throw new NotFoundError('CONVERSATION_NOT_FOUND');
       const messages = await chatbotRepository.getMessages(conv.id);
       res.json({ ...conv, messages });
@@ -92,7 +92,7 @@ export function chatbotRouter(deps: ChatbotDeps): Router {
       const ctx = getCtx(req);
       const { content } = postMessageSchema.parse(req.body);
 
-      const conv = await chatbotRepository.getConversation(ctx.orgId, req.params.id ?? '');
+      const conv = await chatbotRepository.getConversation(ctx.orgId, req.params.id ?? '', ctx.actorId);
       if (!conv) throw new NotFoundError('CONVERSATION_NOT_FOUND');
 
       // 1. persiste a mensagem do utilizador (+ título se for a primeira).
