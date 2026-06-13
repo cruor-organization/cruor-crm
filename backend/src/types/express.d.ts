@@ -16,6 +16,8 @@ declare global {
         orgId: string;
         role: AppRole;
       };
+      // Body raw capturado no express.json verify (HMAC das rotas internas).
+      rawBody?: string;
     }
   }
 }

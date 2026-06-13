@@ -12,15 +12,22 @@ import hpp from 'hpp';
 import { pinoHttp } from 'pino-http';
 
 import { createAuth, type Auth } from './auth/index.js';
+import { makeAiServiceClient } from './clients/ai-service.client.js';
 import type { Env } from './config/env.js';
 import { createLogger } from './logger.js';
 import { attachAuthContext } from './middlewares/auth-context.js';
 import { errorHandler } from './middlewares/error.js';
+import { requireBackendHmac } from './middlewares/hmac.js';
 import { requestId, REQUEST_ID_HEADER } from './middlewares/request-id.js';
 import { createAlibabaApi, type AlibabaApiPort } from './modules/alibaba/alibaba-api.port.js';
 import { alibabaRouter } from './modules/alibaba/alibaba.routes.js';
 import { auditRouter } from './modules/audit/audit.routes.js';
+import { chatbotRouter } from './modules/chatbot/chatbot.routes.js';
+import { internalToolsRouter } from './modules/chatbot/internal-tools.routes.js';
 import { customersRouter } from './modules/customers/customers.routes.js';
+import { embeddingsRouter } from './modules/embeddings/embeddings.routes.js';
+import { makeEmbeddingsService } from './modules/embeddings/embeddings.service.js';
+import { setProductEmbeddingHook } from './modules/embeddings/ingest-hook.js';
 import { createInvoiceProvider } from './modules/invoices/invoice-provider.port.js';
 import { invoicesRouter } from './modules/invoices/invoices.routes.js';
 import { leadsRouter } from './modules/leads/leads.routes.js';
@@ -94,7 +101,15 @@ export function createApp(env: Env): CreatedApp {
   });
   app.use('/api/auth', authLimiter, toNodeHandler(auth));
 
-  app.use(express.json({ limit: '1mb' }));
+  app.use(
+    express.json({
+      limit: '1mb',
+      // Captura o body raw para HMAC das rotas internas (/internal/tools).
+      verify: (req, _res, buf) => {
+        (req as express.Request).rawBody = buf.toString('utf8');
+      },
+    }),
+  );
   app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 
   // AuthContext após o body parser; popula `req.ctx`.
@@ -119,6 +134,22 @@ export function createApp(env: Env): CreatedApp {
   const invoiceProvider = createInvoiceProvider(env.INVOICE_PROVIDER);
   setInvoiceProvider(invoiceProvider);
   app.use('/api/invoices', invoicesRouter(invoiceProvider));
+
+  // IA (Fase 4 §10.8): cliente ai-service + serviço de embeddings.
+  const aiServiceClient = makeAiServiceClient(env.AI_SERVICE_URL, env.AI_HMAC_SECRET);
+  const embeddingsService = makeEmbeddingsService(aiServiceClient);
+  // Ingestão best-effort de produtos → embeddings; log sem bloquear o CRUD.
+  setProductEmbeddingHook(async (orgId, product) => {
+    try {
+      await embeddingsService.ingestProduct(orgId, product);
+    } catch (err) {
+      logger.warn({ err, productId: product.id }, 'ingestão de embedding do produto falhou');
+    }
+  });
+  app.use('/api/embeddings', embeddingsRouter(embeddingsService));
+  app.use('/api/chatbot', chatbotRouter({ embeddings: embeddingsService, ai: aiServiceClient }));
+  // Tools internas (ai-service → backend), protegidas por HMAC, sem sessão.
+  app.use('/internal/tools', requireBackendHmac(env.AI_HMAC_SECRET), internalToolsRouter());
 
   app.use((_req, res) => {
     res.status(404).json({ code: 'NOT_FOUND', message: 'Rota não encontrada.' });

@@ -35,6 +35,8 @@ const env = {
   ALIBABA_SYNC_ENABLED: false,
   ALIBABA_SYNC_INTERVAL_MS: 300000,
   INVOICE_PROVIDER: 'mock' as const,
+  AI_SERVICE_URL: 'http://localhost:3002',
+  AI_HMAC_SECRET: 'x'.repeat(40),
 };
 
 describe('GET /healthz', () => {

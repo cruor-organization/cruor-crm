@@ -4,6 +4,7 @@ import { prisma } from '../../db/index.js';
 import type { AuthContext } from '../../middlewares/auth-context.js';
 import { ConflictError, NotFoundError } from '../../shared/errors.js';
 import { writeAudit } from '../audit/audit.service.js';
+import { onProductUpserted } from '../embeddings/ingest-hook.js';
 
 import type {
   CreateProductInput,
@@ -150,6 +151,7 @@ export const productsService = {
       },
     });
     await writeAudit(ctx, 'product', product.id, 'CREATE', { sku: product.sku });
+    onProductUpserted(ctx.orgId, product); // §10.8 ingestão de embedding (best-effort)
     return product;
   },
 
@@ -161,7 +163,9 @@ export const productsService = {
     });
     if (result.count === 0) throw new NotFoundError('PRODUCT_NOT_FOUND');
     await writeAudit(ctx, 'product', id, 'UPDATE', input);
-    return this.getById(ctx, id);
+    const updated = await this.getById(ctx, id);
+    onProductUpserted(ctx.orgId, updated); // §10.8 re-ingestão de embedding (best-effort)
+    return updated;
   },
 
   async setDecision(ctx: AuthContext, id: string, input: SetDecisionInput): Promise<Product> {
