@@ -30,6 +30,12 @@ const envSchema = z.object({
   // Provider de faturação (§10.14). mock por defeito; real (Moloni/InvoiceXpress)
   // é decisão da Fase 4.
   INVOICE_PROVIDER: z.enum(['mock', 'moloni', 'invoicexpress']).default('mock'),
+
+  // AI service (Fase 4, §10.8). O backend chama o ai-service para embeddings e
+  // chat; o ai-service chama de volta /internal/tools/* — HMAC bidirecional com
+  // segredo partilhado (tem de ser igual ao AI_HMAC_SECRET do ai-service).
+  AI_SERVICE_URL: z.string().url().default('http://localhost:3002'),
+  AI_HMAC_SECRET: z.string().min(32, 'AI_HMAC_SECRET tem de ter pelo menos 32 caracteres.'),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -46,6 +52,8 @@ const RELEVANT_KEYS = [
   'ALIBABA_SYNC_ENABLED',
   'ALIBABA_SYNC_INTERVAL_MS',
   'INVOICE_PROVIDER',
+  'AI_SERVICE_URL',
+  'AI_HMAC_SECRET',
 ] as const;
 
 export function loadEnv(input: NodeJS.ProcessEnv = process.env): Env {
