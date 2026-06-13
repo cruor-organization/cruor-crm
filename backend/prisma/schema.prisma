@@ -53,6 +53,7 @@ model User {
   specialPricesCreated CustomerSpecialPrice[] @relation("SpecialPriceCreator")
   customerOrders       CustomerOrder[]        @relation("CustomerOrderSalesRep")
   payments             Payment[]              @relation("PaymentActor")
+  conversations        Conversation[]         @relation("ConversationUser")
 
   @@map("user")
 }
@@ -141,6 +142,9 @@ model Organization {
   quotes                Quote[]
   alibabaOrders         AlibabaOrder[]
   invoices              Invoice[]
+  embeddings            Embedding[]
+  conversations         Conversation[]
+  messages              Message[]
 
   @@map("organization")
 }
@@ -1294,4 +1298,74 @@ model Payment {
 
   @@index([organizationId, invoiceId])
   @@map("payment")
+}
+
+// ----------------------------------------------------------------------------
+// Domínio Fase 4 — Conteúdo & IA (§10.8, §10.6)
+//
+// Embedding: vector store pgvector. A coluna `embedding` é Unsupported no
+// Prisma (vector(1536), text-embedding-3-small) — escritas/leituras de vetor
+// fazem-se por SQL cru ($executeRaw upsert, $queryRaw similarity com `<=>`).
+// Índice HNSW criado na migration. Multi-tenant: organizationId em tudo (§7).
+// Conversation/Message: sessões do chatbot RAG read-only.
+// ----------------------------------------------------------------------------
+
+enum EmbeddingSourceType {
+  PRODUCT
+  PRODUCT_VISUAL
+  MEETING
+  KB_ARTICLE
+  COMPETITOR
+}
+
+model Embedding {
+  id             String                       @id @default(cuid())
+  organizationId String
+  sourceType     EmbeddingSourceType
+  sourceId       String
+  chunkIndex     Int                          @default(0)
+  content        String
+  embedding      Unsupported("vector(1536)")?
+  metadata       Json?
+  createdAt      DateTime                     @default(now())
+  updatedAt      DateTime                     @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, sourceType, sourceId, chunkIndex])
+  @@index([organizationId, sourceType])
+  @@map("embedding")
+}
+
+model Conversation {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  title          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation("ConversationUser", fields: [userId], references: [id], onDelete: Cascade)
+  messages     Message[]
+
+  @@index([organizationId, userId, updatedAt(sort: Desc)])
+  @@map("conversation")
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  organizationId String
+  // "user" | "assistant" (system entra no prompt, não persiste como Message)
+  role           String
+  content        String
+  toolCalls      Json? // [{ id, name, input, output? }]
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("message")
 }
