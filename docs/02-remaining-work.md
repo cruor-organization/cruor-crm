@@ -12,13 +12,32 @@ Documento vivo. Mapeia o estado actual face ao `prompt.md` v3 e ao plano de fase
 | ------------------------- | ------- | ---------------------------------- | --------------------------------- |
 | 0 Bootstrap               | ✅ done | 100%                               | 100%                              |
 | 1 Núcleo Comercial        | ✅ done | 100%                               | 90% (listings + forms RHF/Zod)    |
-| 2 Stock & Pricing         | 🟡 60%  | Stock 80%, Pricing 30% (só domain) | Stock 90%, Pricing 100% (UI mock) |
-| 3 Encomendas              | 🟡 skel | —                                  | 100% skeleton (mock UI)           |
-| 4 Conteúdo & IA           | 🟡 skel | stub ai-service apenas             | 100% skeleton (mock UI)           |
+| 2 Stock & Pricing         | ✅ done | Stock + Pricing HTTP completos     | Stock + Pricing ligados à API     |
+| 3 Encomendas              | ✅ done | Orders/Quotes/Returns/Alibaba/Invoices | (detail pages parciais)       |
+| 4 Conteúdo & IA           | 🟡 30%  | **slice 1**: RAG + chatbot texto   | chatbot ligado ao backend real    |
 | 5 Catálogos & Campanhas   | 🟡 skel | —                                  | 100% skeleton (mock UI)           |
 | 6 Automação & Crescimento | 🟡 skel | —                                  | 100% skeleton (mock UI)           |
 | 7 Operação em Campo       | 🟡 skel | —                                  | 100% skeleton (mock UI)           |
 | 8 Hardening               | ❌ 0%   | —                                  | —                                 |
+
+**Sessão 2026-06-10 (Fase 4 slice 1 — Fundação RAG + Chatbot texto):** entregue o
+primeiro corte da Fase 4 (§10.8). Backend: modelos `Embedding`(pgvector vector(1536)
++ índice HNSW)/`Conversation`/`Message` + migration `20260610125303_phase4_rag`;
+módulos `embeddings` (ingestão de produtos + similarity search escopada a org) e
+`chatbot` (conversations + endpoint SSE que orquestra RAG → ai-service → relay →
+persiste); internal tools route (HMAC) com 4 tools read-only (searchProducts,
+getProductAvailability, getCustomer, getCustomerOrderHistory). `ai-service` ganhou
+vida: portas mock/live (`AI_PROVIDER`), `/embed` e `/chat/stream` (SSE) protegidos por
+HMAC, agente de tool-calling via **OpenAI SDK** (ADR-0003 — desvio §0 de Claude→OpenAI
+autorizado), embeddings `text-embedding-3-small`. Frontend: `/chatbot` religado ao
+backend real (lista/cria conversas, stream SSE). Verificado ao vivo o round-trip
+completo com provider mock (HMAC bidirecional + escopo orgId + contrato de eventos
+§10.8). Pipelines verdes nos 3 serviços; +9 testes no ai-service.
+
+**Pendente do slice 1 (não-bloqueante do gate):** smoke no browser autenticado (precisa
+de login OWNER); Supertest E2E autenticado do `/api/chatbot` (o projeto ainda não tem
+harness de auth para Supertest — dívida pré-existente); product_card/customer_card com
+render rico no frontend (hoje o tool_result já mostra os dados).
 
 **Sessão 2026-05-13/14:** construído o esqueleto frontend completo — 33 rotas, sidebar com 9 secções, dashboard, forms reais (RHF+Zod) para as 5 entidades com backend (suppliers/customers/leads/products/stock), e UI mock rica para as fases 3-7 (encomendas, devoluções, alibaba, inbox, visitas, rotas, chatbot, reuniões, scraping, campanhas, email, social, reports, settings, catálogos, pricing). Smoke test no browser validou todas as rotas + CRUD real end-to-end. **"skel" = UI navegável com dados mock; backend dessas fases ainda não existe.**
 
@@ -51,7 +70,7 @@ Cada linha: **§ref** | **módulo** | **backend** | **frontend** | **integraçõ
 
 | §    | Módulo                         | Backend                            | Frontend       | Externos                     | Fase   |
 | ---- | ------------------------------ | ---------------------------------- | -------------- | ---------------------------- | ------ |
-| 10.8 | Chatbot RAG                    | ❌ Stub `ai-service` existe, vazio | ❌ Não existe  | OpenAI/LangChain + LangGraph | 4      |
+| 10.8 | Chatbot RAG                    | 🟡 slice 1: RAG texto + 4 tools read-only (OpenAI, ADR-0003) | ✅ ligado ao backend (SSE) | OpenAI (chat+embeddings) | 4 |
 | 10.6 | Reuniões + Fathom              | ❌ Não começou                     | ❌ Não começou | Fathom webhook (HMAC)        | 4      |
 | 10.7 | Scraping concorrentes          | ❌ Não começou                     | ❌ Não começou | scraping engine (n8n?)       | 4 ou 6 |
 | 10.9 | Scraping leads (Google Places) | ❌ Não começou                     | ❌ Não começou | Google Places API            | 6      |
