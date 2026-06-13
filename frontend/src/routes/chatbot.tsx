@@ -1,37 +1,66 @@
 /**
- * Rota /chatbot — Assistente RAG com suporte a tool calls e DRAFTs (§10.8).
+ * Rota /chatbot — Assistente RAG read-only (§10.8), ligado ao backend real.
+ * Lista/cria conversas, carrega mensagens e faz stream SSE da resposta do agente
+ * (token/tool_call/tool_result/product_card/done/error). Tools de escrita (DRAFT)
+ * ficam para um slice posterior.
  */
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { Bot, Check, ChevronRight, Send, User, X, Zap } from 'lucide-react';
+import { Bot, ChevronRight, Send, User, Zap } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
-import { mockFetch } from '@/lib/mock-api';
-import {
-  mockChatConversations,
-  type ChatConversation,
-  type ChatMessage,
-  type ToolCallStatus,
-} from '@/lib/mock-data/chatbot';
+import { api } from '@/lib/api';
 
 export const Route = createFileRoute('/chatbot')({
   component: ChatbotPage,
 });
 
+const API_BASE = import.meta.env.VITE_API_URL ?? '';
+
 // ---------------------------------------------------------------------------
-// Subcomponentes
+// Tipos (alinhados com o backend §10.8)
 // ---------------------------------------------------------------------------
 
-interface ToolCallCardProps {
+type ToolCallStatus = 'running' | 'done';
+
+interface UiToolCall {
   id: string;
   name: string;
   input: Record<string, unknown>;
-  outputJson: string | null;
+  output?: unknown;
   status: ToolCallStatus;
 }
 
-function ToolCallCard({ name, input, outputJson, status }: ToolCallCardProps) {
+interface UiMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  toolCalls?: UiToolCall[];
+}
+
+interface ConversationSummary {
+  id: string;
+  title: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ConversationDetail extends ConversationSummary {
+  messages: {
+    id: string;
+    role: string;
+    content: string;
+    toolCalls: unknown;
+    createdAt: string;
+  }[];
+}
+
+// ---------------------------------------------------------------------------
+// Subcomponentes de apresentação
+// ---------------------------------------------------------------------------
+
+function ToolCallCard({ name, input, output, status }: UiToolCall) {
   const [expanded, setExpanded] = useState(false);
   return (
     <div className="my-1 rounded-control border border-blue-200 bg-blue-50 px-3 py-2 text-xs">
@@ -54,11 +83,11 @@ function ToolCallCard({ name, input, outputJson, status }: ToolCallCardProps) {
           <pre className="overflow-x-auto rounded bg-surface p-2 text-neutral-700">
             {JSON.stringify(input, null, 2)}
           </pre>
-          {outputJson !== null && (
+          {output !== undefined && (
             <>
               <p className="text-neutral-500">Output:</p>
               <pre className="overflow-x-auto rounded bg-surface p-2 text-neutral-700">
-                {outputJson}
+                {JSON.stringify(output, null, 2)}
               </pre>
             </>
           )}
@@ -68,50 +97,10 @@ function ToolCallCard({ name, input, outputJson, status }: ToolCallCardProps) {
   );
 }
 
-function DraftCard({
-  draftId,
-  onConfirm,
-  onDiscard,
-}: {
-  draftId: string;
-  onConfirm: () => void;
-  onDiscard: () => void;
-}) {
-  return (
-    <div className="my-2 rounded-control border-2 border-amber-300 bg-amber-50 px-4 py-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
-        DRAFT — requer confirmação
-      </p>
-      <p className="mt-1 text-sm text-neutral-700">
-        O orçamento <span className="font-mono font-semibold">{draftId}</span> foi preparado mas
-        ainda não foi enviado. Confirme para prosseguir.
-      </p>
-      <div className="mt-3 flex gap-2">
-        <Button size="sm" onClick={onConfirm} icon={<Check className="h-3.5 w-3.5" />}>
-          Confirmar
-        </Button>
-        <Button size="sm" variant="ghost" onClick={onDiscard} icon={<X className="h-3.5 w-3.5" />}>
-          Descartar
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function MessageBubble({
-  message,
-  onConfirmDraft,
-  onDiscardDraft,
-}: {
-  message: ChatMessage;
-  onConfirmDraft: (id: string) => void;
-  onDiscardDraft: (id: string) => void;
-}) {
+function MessageBubble({ message }: { message: UiMessage }) {
   const isUser = message.role === 'user';
-
   return (
     <div className={`flex gap-2 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-      {/* Avatar */}
       <div
         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white ${
           isUser ? 'bg-cruor-500' : 'bg-neutral-400'
@@ -119,27 +108,11 @@ function MessageBubble({
       >
         {isUser ? <User className="h-3.5 w-3.5" /> : <Bot className="h-3.5 w-3.5" />}
       </div>
-
-      {/* Conteúdo */}
-      <div
-        className={`max-w-[75%] space-y-1 ${isUser ? 'items-end' : 'items-start'} flex flex-col`}
-      >
-        {/* Tool call */}
-        {message.toolCall && !isUser && (
-          <ToolCallCard
-            id={message.toolCall.id}
-            name={message.toolCall.name}
-            input={message.toolCall.input}
-            outputJson={
-              message.toolCall.output !== undefined
-                ? JSON.stringify(message.toolCall.output, null, 2)
-                : null
-            }
-            status={message.toolCall.status}
-          />
-        )}
-
-        {/* Texto */}
+      <div className={`flex max-w-[75%] flex-col space-y-1 ${isUser ? 'items-end' : 'items-start'}`}>
+        {!isUser &&
+          message.toolCalls?.map((tc) => (
+            <ToolCallCard key={tc.id} {...tc} />
+          ))}
         {message.content && (
           <div
             className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
@@ -149,7 +122,6 @@ function MessageBubble({
             }`}
           >
             {message.content.split('\n').map((line, i) => {
-              // Renderizar **negrito** simples
               const parts = line.split(/\*\*(.*?)\*\*/g);
               return (
                 <p key={i} className={i > 0 ? 'mt-1' : ''}>
@@ -161,81 +133,188 @@ function MessageBubble({
             })}
           </div>
         )}
-
-        {/* Draft card */}
-        {message.isDraft &&
-          message.draftConfirmed === null &&
-          Boolean(message.toolCall?.output) && (
-            <DraftCard
-              draftId={(message.toolCall?.output as { draftId: string }).draftId}
-              onConfirm={() => onConfirmDraft(message.id)}
-              onDiscard={() => onDiscardDraft(message.id)}
-            />
-          )}
-        {message.isDraft && message.draftConfirmed === true && (
-          <p className="text-xs text-green-600">✓ Orçamento confirmado (mock)</p>
-        )}
-        {message.isDraft && message.draftConfirmed === false && (
-          <p className="text-xs text-neutral-400">Orçamento descartado</p>
-        )}
-
-        <p className="text-[10px] text-neutral-400">
-          {new Date(message.timestamp).toLocaleTimeString('pt-PT', {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        </p>
       </div>
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
+// SSE: consome o stream de /conversations/:id/messages
+// ---------------------------------------------------------------------------
+
+interface SseEvent {
+  type: string;
+  text?: string;
+  id?: string;
+  name?: string;
+  input?: Record<string, unknown>;
+  output?: unknown;
+}
+
+async function streamMessage(
+  conversationId: string,
+  content: string,
+  onEvent: (e: SseEvent) => void,
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/chatbot/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  });
+  if (!res.ok || !res.body) {
+    onEvent({ type: 'error', text: `Erro ${res.status}` });
+    return;
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let sep: number;
+    while ((sep = buffer.indexOf('\n\n')) !== -1) {
+      const block = buffer.slice(0, sep);
+      buffer = buffer.slice(sep + 2);
+      const line = block.split('\n').find((l) => l.startsWith('data:'));
+      if (!line) continue;
+      const json = line.slice(5).trim();
+      if (!json) continue;
+      try {
+        onEvent(JSON.parse(json) as SseEvent);
+      } catch {
+        /* ignora frames malformados */
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Página principal
 // ---------------------------------------------------------------------------
 
+function toUiToolCalls(raw: unknown): UiToolCall[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  return raw.map((t) => {
+    const tc = t as { id?: string; name?: string; input?: Record<string, unknown>; output?: unknown };
+    return {
+      id: String(tc.id ?? ''),
+      name: String(tc.name ?? ''),
+      input: tc.input ?? {},
+      output: tc.output,
+      status: 'done' as const,
+    };
+  });
+}
+
 function ChatbotPage() {
-  const [selectedId, setSelectedId] = useState<string>('conv-001');
+  const queryClient = useQueryClient();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<UiMessage[]>([]);
   const [draft, setDraft] = useState('');
-  const [draftStates, setDraftStates] = useState<Record<string, boolean | null>>({});
+  const [streaming, setStreaming] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const { data: conversations = [] } = useQuery({
     queryKey: ['chatbot-conversations'],
-    queryFn: () => mockFetch(mockChatConversations),
+    queryFn: () => api.get<ConversationSummary[]>('/api/chatbot/conversations'),
   });
 
-  const selected: ChatConversation | undefined = conversations.find((c) => c.id === selectedId);
+  // Seleciona a primeira conversa por omissão.
+  useEffect(() => {
+    if (selectedId === null && conversations.length > 0) {
+      setSelectedId(conversations[0]?.id ?? null);
+    }
+  }, [conversations, selectedId]);
+
+  // Carrega mensagens da conversa selecionada.
+  useEffect(() => {
+    if (!selectedId) {
+      setMessages([]);
+      return;
+    }
+    let cancelled = false;
+    void api.get<ConversationDetail>(`/api/chatbot/conversations/${selectedId}`).then((conv) => {
+      if (cancelled) return;
+      setMessages(
+        conv.messages.map((m) => ({
+          id: m.id,
+          role: m.role === 'assistant' ? 'assistant' : 'user',
+          content: m.content,
+          toolCalls: toUiToolCalls(m.toolCalls),
+        })),
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [selectedId]);
+  }, [messages]);
 
-  function handleSend() {
-    if (!draft.trim()) return;
-    console.info('[Chatbot] enviar mensagem (mock):', {
-      conversationId: selectedId,
-      text: draft.trim(),
-    });
+  const createConversation = useMutation({
+    mutationFn: () => api.post<ConversationSummary>('/api/chatbot/conversations', {}),
+    onSuccess: async (conv) => {
+      await queryClient.invalidateQueries({ queryKey: ['chatbot-conversations'] });
+      setSelectedId(conv.id);
+      setMessages([]);
+    },
+  });
+
+  async function handleSend() {
+    const text = draft.trim();
+    if (!text || !selectedId || streaming) return;
     setDraft('');
+    setStreaming(true);
+
+    const userMsg: UiMessage = { id: `local-u-${Date.now()}`, role: 'user', content: text };
+    const assistantId = `local-a-${Date.now()}`;
+    setMessages((prev) => [...prev, userMsg, { id: assistantId, role: 'assistant', content: '' }]);
+
+    const updateAssistant = (fn: (m: UiMessage) => UiMessage): void => {
+      setMessages((prev) => prev.map((m) => (m.id === assistantId ? fn(m) : m)));
+    };
+
+    try {
+      await streamMessage(selectedId, text, (e) => {
+        if (e.type === 'token' && e.text) {
+          updateAssistant((m) => ({ ...m, content: m.content + e.text }));
+        } else if (e.type === 'tool_call') {
+          updateAssistant((m) => ({
+            ...m,
+            toolCalls: [
+              ...(m.toolCalls ?? []),
+              { id: String(e.id), name: String(e.name), input: e.input ?? {}, status: 'running' },
+            ],
+          }));
+        } else if (e.type === 'tool_result') {
+          updateAssistant((m) => ({
+            ...m,
+            toolCalls: m.toolCalls?.map((tc) =>
+              tc.id === String(e.id) ? { ...tc, output: e.output, status: 'done' } : tc,
+            ),
+          }));
+        } else if (e.type === 'error' && e.text) {
+          updateAssistant((m) => ({ ...m, content: m.content + `\n_[erro: ${e.text}]_` }));
+        }
+      });
+    } finally {
+      setStreaming(false);
+      void queryClient.invalidateQueries({ queryKey: ['chatbot-conversations'] });
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
-      handleSend();
+      void handleSend();
     }
   }
 
-  function handleConfirmDraft(messageId: string) {
-    console.info('[Chatbot] confirmar DRAFT (mock):', messageId);
-    setDraftStates((prev) => ({ ...prev, [messageId]: true }));
-  }
-
-  function handleDiscardDraft(messageId: string) {
-    console.info('[Chatbot] descartar DRAFT (mock):', messageId);
-    setDraftStates((prev) => ({ ...prev, [messageId]: false }));
-  }
+  const selected = conversations.find((c) => c.id === selectedId);
 
   return (
     <div className="-mx-6 -mt-6 flex h-[calc(100vh-4rem)] overflow-hidden">
@@ -259,21 +338,24 @@ function ChatbotPage() {
                   conv.id === selectedId ? 'text-cruor-700' : 'text-neutral-800'
                 }`}
               >
-                {conv.title}
+                {conv.title ?? 'Nova conversa'}
               </p>
               <p className="mt-0.5 text-xs text-neutral-400">
-                {new Date(conv.startedAt).toLocaleDateString('pt-PT')} · {conv.messages.length}{' '}
-                mensagens
+                {new Date(conv.updatedAt).toLocaleDateString('pt-PT')}
               </p>
             </button>
           ))}
+          {conversations.length === 0 && (
+            <p className="px-4 py-6 text-center text-xs text-neutral-400">Sem conversas ainda.</p>
+          )}
         </div>
         <div className="border-t border-neutral-200 px-4 py-3">
           <Button
             variant="secondary"
             size="sm"
             className="w-full"
-            onClick={() => console.info('[Chatbot] nova conversa (mock)')}
+            onClick={() => createConversation.mutate()}
+            disabled={createConversation.isPending}
           >
             Nova conversa
           </Button>
@@ -282,43 +364,31 @@ function ChatbotPage() {
 
       {/* Área de chat */}
       <div className="flex flex-1 flex-col bg-neutral-50">
-        {/* Cabeçalho */}
         <div className="flex items-center gap-3 border-b border-neutral-200 bg-surface px-5 py-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cruor-100">
             <Bot className="h-4 w-4 text-cruor-700" />
           </div>
           <div>
             <p className="font-semibold text-neutral-900">Assistente RAG</p>
-            <p className="text-xs text-neutral-500">
-              {selected?.title ?? 'Selecione uma conversa'}
-            </p>
+            <p className="text-xs text-neutral-500">{selected?.title ?? 'Selecione uma conversa'}</p>
           </div>
           <span className="ml-auto rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600">
-            Apenas leitura por omissão · DRAFT requer confirmação
+            Apenas leitura
           </span>
         </div>
 
-        {/* Mensagens */}
         <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
-          {selected?.messages.map((msg) => (
-            <MessageBubble
-              key={msg.id}
-              message={{
-                ...msg,
-                draftConfirmed: msg.isDraft
-                  ? draftStates[msg.id] !== undefined
-                    ? draftStates[msg.id]
-                    : msg.draftConfirmed
-                  : undefined,
-              }}
-              onConfirmDraft={handleConfirmDraft}
-              onDiscardDraft={handleDiscardDraft}
-            />
+          {messages.map((msg) => (
+            <MessageBubble key={msg.id} message={msg} />
           ))}
+          {!selectedId && (
+            <p className="mt-10 text-center text-sm text-neutral-400">
+              Cria ou seleciona uma conversa para começar.
+            </p>
+          )}
           <div ref={bottomRef} />
         </div>
 
-        {/* Input */}
         <div className="border-t border-neutral-200 bg-surface px-4 py-3">
           <div className="flex items-end gap-2">
             <textarea
@@ -327,17 +397,17 @@ function ChatbotPage() {
               onKeyDown={handleKeyDown}
               placeholder="Faça uma pergunta… (Ctrl+Enter para enviar)"
               rows={2}
-              className="flex-1 resize-none rounded-control border border-neutral-200 px-3 py-2 text-sm outline-none placeholder:text-neutral-400 focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500"
+              disabled={!selectedId || streaming}
+              className="flex-1 resize-none rounded-control border border-neutral-200 px-3 py-2 text-sm outline-none placeholder:text-neutral-400 focus:border-cruor-500 focus:ring-1 focus:ring-cruor-500 disabled:bg-neutral-50"
             />
             <Button
               icon={<Send className="h-4 w-4" />}
-              onClick={handleSend}
-              disabled={!draft.trim()}
+              onClick={() => void handleSend()}
+              disabled={!draft.trim() || !selectedId || streaming}
             >
-              Enviar
+              {streaming ? '…' : 'Enviar'}
             </Button>
           </div>
-          <p className="mt-1 text-right text-xs text-neutral-400">Mock — sem ligação ao backend</p>
         </div>
       </div>
     </div>
